@@ -335,24 +335,25 @@
 
         var addMoveBtn = _btn('加入技能', '#27ae60', function(){
             var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
-            if (!p) { status.textContent = 'no player'; return; }
+            if (!p) { alert('no player - start a run first'); return; }
+            if (!p.moves) { alert('player has no moves array'); return; }
             var moveId = moveSelect.value;
+            var beforeCount = p.moves.length;
             try {
                 var G = window.GAME;
+                alert('GAME.Moves: ' + (typeof G.Moves) + '\nMoves.instance: ' + (typeof (G.Moves && G.Moves.instance)));
                 if (G.Moves && G.Moves.instance) {
                     var moveInstance = G.Moves.instance(moveId, 1);
+                    alert('instance result: ' + (moveInstance ? Object.keys(moveInstance).join(',') : 'null'));
                     if (moveInstance) {
-                        moveInstance.since = G.Game.st ? G.Game.st.time : 0;
-                        if (!p.moves) p.moves = [];
+                        try { moveInstance.since = G.Game.st ? G.Game.st.time : 0; } catch(e){}
                         p.moves.push(moveInstance);
-                        status.textContent = 'added: ' + moveId + ' (total: ' + p.moves.length + ')';
+                        alert('pushed! moves now: ' + p.moves.length + '\nlast move id: ' + (p.moves[p.moves.length-1] && p.moves[p.moves.length-1].id));
                     } else {
-                        status.textContent = 'instance returned null';
+                        alert('instance returned null/undefined for: ' + moveId);
                     }
-                } else {
-                    status.textContent = 'Moves.instance not found';
                 }
-            } catch(e) { status.textContent = 'err: ' + e.message; }
+            } catch(e) { alert('error: ' + e.message + '\nstack: ' + e.stack); }
         });
         addMoveBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#27ae60;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
         body.appendChild(addMoveBtn);

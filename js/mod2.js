@@ -342,6 +342,34 @@
         _timeBtn('30 分鐘', 1800);
         _timeBtn('34 分鐘', 2040);
 
+        // === 召喚首領 ===
+        var sepBoss = document.createElement('div');
+        sepBoss.textContent = '✦ Boss ✦';
+        sepBoss.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
+        body.appendChild(sepBoss);
+
+        var bossBtn = _btn('召喚首領', '#c0392b', function(){
+            var G = window.GAME;
+            if (!G || !G.Game || !G.Game.player) { alert('no player'); return; }
+            var p = G.Game.player;
+            try {
+                // 用遊戲的 Enemy 建構子召喚 boss
+                // Enemy(dexId, x, y, scaleObj, isBoss)
+                // dexId 隨機選一個寶可夢
+                var dexIds = [3, 6, 9, 65, 68, 76, 94, 130, 131, 143, 149, 150];
+                var dexId = dexIds[Math.floor(Math.random() * dexIds.length)];
+                var enemy = G.Enemy(dexId, p.x + 50, p.y, {'hp':1,'spd':1,'dmg':1}, true);
+                if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
+                    G.EnemyMgr.add(enemy);
+                    alert('boss 召喚: dex #' + dexId);
+                } else {
+                    alert('Enemy 建構失敗');
+                }
+            } catch(e) { alert('err: ' + e.message); }
+        });
+        bossBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
+        body.appendChild(bossBtn);
+
         // === 加技能 ===
         var sep3b = document.createElement('div');
         sep3b.textContent = '✦ Add Move ✦';
@@ -460,7 +488,7 @@
         _saveInputRow('Coins', 'amount', function(s){return s.coins;}, function(s, v){ s.coins = v; });
         _saveInputRow('T1 Tickets', '單抽', function(s){return s.tickets && s.tickets.t1;}, function(s, v){ if(!s.tickets) s.tickets={t1:0,t10:0}; s.tickets.t1 = v; });
         _saveInputRow('T10 Tickets', '十連', function(s){return s.tickets && s.tickets.t10;}, function(s, v){ if(!s.tickets) s.tickets={t1:0,t10:0}; s.tickets.t10 = v; });
-        _saveInputRow('Candy', 'candy', function(s){return s.candy;}, function(s, v){ s.candy = v; });
+        _saveInputRow('Candy', 'candy', function(s){return s.bag && s.bag.candy;}, function(s, v){ if(!s.bag) s.bag = {}; s.bag.candy = v; });
 
         // 一鍵加 99999 錢 + 99 抽獎卷
         var maxBtn = _btn('MAX ALL (coins+tickets+candy)', '#b41818', function(){
@@ -472,7 +500,8 @@
                 if (!s.tickets) s.tickets = {t1:0, t10:0};
                 s.tickets.t1 = 999;
                 s.tickets.t10 = 999;
-                s.candy = 9999;
+                if (!s.bag) s.bag = {};
+                s.bag.candy = 9999;
                 saveInfo.textContent = 'MAX done';
                 if (G.DB.commit) try { G.DB.commit(); saveInfo.textContent = 'MAX done + committed'; } catch(e){}
                 else if (G.DB.saveNow) try { G.DB.saveNow(); } catch(e){}
@@ -556,7 +585,7 @@
                 var G2 = window.GAME;
                 if (G2 && G2.DB && G2.DB.save) {
                     var sv = G2.DB.save;
-                    saveInfo.textContent = 'coins:' + (sv.coins||0) + ' t1:' + (sv.tickets?sv.tickets.t1:0) + ' t10:' + (sv.tickets?sv.tickets.t10:0) + ' candy:' + (sv.candy||0);
+                    saveInfo.textContent = 'coins:' + (sv.coins||0) + ' t1:' + (sv.tickets?sv.tickets.t1:0) + ' t10:' + (sv.tickets?sv.tickets.t10:0) + ' candy:' + (sv.bag?sv.bag.candy||0:0);
                 }
             } catch(e) {}
         }, 200);

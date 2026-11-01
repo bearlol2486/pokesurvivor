@@ -357,8 +357,7 @@
                             p.maxMoves = p.slots.length + 1;
                         }
                         p.slots.push([moveInstance]);
-                        // 呼叫 arrange() 讓遊戲重新排列 slots
-                        try { if (p.arrange) p.arrange(); } catch(e){}
+                        // 不呼叫 arrange()（可能出錯回滾）
                         // 設定 active
                         try { if (!p.active) p.active = p.slots.length - 1; } catch(e){}
                         // 觸發刷新

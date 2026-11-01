@@ -52,11 +52,26 @@
     }
 
     function makePanel(GAME) {
-        // 強制移除所有舊 panel（不管什麼版本）
-        var allOld = document.querySelectorAll('[id^="_ps_modpanel"], [id^="_mp_"]');
-        allOld.forEach(function(el){ el.remove(); });
-        // 也清除任何全域 panel 變數
-        try { delete window._mp_loaded; } catch(e){}
+        // 強制移除所有舊 panel — 用多種 selector 確保抓到
+        var selectors = [
+            '#_ps_modpanel',
+            '#_mp_panel',
+            '[id^="_ps_modpanel"]',
+            '[id^="_mp_"]',
+            'div[style*="z-index:99999"]',
+            'div[style*="z-index: 99999"]'
+        ];
+        selectors.forEach(function(sel){
+            try {
+                var els = document.querySelectorAll(sel);
+                els.forEach(function(el){
+                    // 只移除浮動面板，不動其他元素
+                    if (el && el.style && el.style.position === 'fixed' && el.style.zIndex === '99999') {
+                        el.remove();
+                    }
+                });
+            } catch(e) {}
+        });
         window._mp_loaded = true;
         var sg = document.createElement('div');
         sg.id = '_ps_modpanel';
@@ -97,6 +112,7 @@
         };
 
         var body = document.createElement('div');
+        body.style.cssText = 'max-height:60vh;overflow-y:auto;overflow-x:hidden;';
         sg.appendChild(body);
 
         function _row(labelText) {
@@ -179,6 +195,7 @@
         _toggle('Kill Aura', 'killaura', 'ON', 'OFF', '#b41818', '#3c3c41');
         _toggle('ATK Lock', 'atklock', 'ON', 'OFF', '#b41818', '#3c3c41');
         _toggle('SPD Lock', 'spdlock', 'ON', 'OFF', '#00a2ff', '#3c3c41');
+        _toggle('XP Boost', 'xpboost', 'ON', 'OFF', '#00ff88', '#3c3c41');
 
         // === Save / Money / Tickets 區塊 ===
         var sep1 = document.createElement('div');
@@ -281,7 +298,8 @@
             // Apply locks
             if (window._mp_godmode) { try { p.hp = p.maxHp; } catch(e){} }
             if (window._mp_atklock) { try { p.atkMul = 99; } catch(e){} }
-            if (window._mp_spdlock) { try { p.spd = 500; } catch(e){} }
+            if (window._mp_spdlock) { try { p.spd = 500; p.speed = 500; p.baseSpd = 500; } catch(e){} }
+            if (window._mp_xpboost) { try { p.xp = (p.xpNext || 100) - 1; } catch(e){} }
             // Kill Aura: set all enemies hp to 0 and mark dead
             if (window._mp_killaura) {
                 try {

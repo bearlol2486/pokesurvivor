@@ -281,9 +281,16 @@
         sep2.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
         body.appendChild(sep2);
 
-        // 暫停按鈕
-        var pauseBtn = _btn('暫停遊戲', '#c0392b', function(){
-            try { window.GAME.Game.togglePause(); } catch(e) {}
+        // 暫停按鈕（用 debugSpeed(0) 凍結，不觸發暫停 UI）
+        var paused = false;
+        var pauseBtn = _btn('凍結遊戲', '#c0392b', function(){
+            try {
+                paused = !paused;
+                if (window.GAME.Game.debugSpeed) {
+                    window.GAME.Game.debugSpeed(paused ? 0 : 1);
+                }
+                pauseBtn.textContent = paused ? '解除凍結' : '凍結遊戲';
+            } catch(e) {}
         });
         pauseBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
         body.appendChild(pauseBtn);
@@ -293,6 +300,8 @@
             var r = _row(label);
             var b = _btn('×' + speed, '#2980b9', function(){
                 try {
+                    paused = false;
+                    pauseBtn.textContent = '凍結遊戲';
                     if (window.GAME.Game.debugSpeed) {
                         window.GAME.Game.debugSpeed(speed);
                     }
@@ -305,32 +314,26 @@
         _speedBtn('加速 2x', 2);
         _speedBtn('加速 4x', 4);
 
-        // Hitbox 調整
-        var hbRow = document.createElement('div');
-        hbRow.style.cssText = 'padding:6px 2px;border-bottom:1px solid rgba(212,165,116,0.25);';
-        var hbLabel = document.createElement('div');
-        hbLabel.textContent = 'Hitbox 大小: 1';
-        hbLabel.style.cssText = 'color:#6b4226;font-weight:500;font-size:11px;margin-bottom:4px;';
-        hbRow.appendChild(hbLabel);
-        var hbSlider = document.createElement('input');
-        hbSlider.type = 'range';
-        hbSlider.min = 1;
-        hbSlider.max = 100;
-        hbSlider.value = 1;
-        hbSlider.style.cssText = 'width:100%;accent-color:#d4a574;';
-        hbSlider.oninput = function(){
-            var v = parseInt(hbSlider.value);
-            var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
-            if (p) {
-                try {
-                    if (!window._mp_origR) window._mp_origR = p.r || 12;
-                    p.r = window._mp_origR * v;
-                    hbLabel.textContent = 'Hitbox 大小: ' + v + 'x (' + Math.floor(p.r) + ')';
-                } catch(e) {}
-            }
+        // 攻擊範圍調整（放大招式 radius，不動 player.r 避免物理亂飄）
+        var atkRRow = document.createElement('div');
+        atkRRow.style.cssText = 'padding:6px 2px;border-bottom:1px solid rgba(212,165,116,0.25);';
+        var atkRLabel = document.createElement('div');
+        atkRLabel.textContent = '攻擊範圍: 1x';
+        atkRLabel.style.cssText = 'color:#6b4226;font-weight:500;font-size:11px;margin-bottom:4px;';
+        atkRRow.appendChild(atkRLabel);
+        var atkRSlider = document.createElement('input');
+        atkRSlider.type = 'range';
+        atkRSlider.min = 1;
+        atkRSlider.max = 10;
+        atkRSlider.value = 1;
+        atkRSlider.style.cssText = 'width:100%;accent-color:#d4a574;';
+        atkRSlider.oninput = function(){
+            var v = parseInt(atkRSlider.value);
+            window._mp_atkradius = v;
+            atkRLabel.textContent = '攻擊範圍: ' + v + 'x';
         };
-        hbRow.appendChild(hbSlider);
-        body.appendChild(hbRow);
+        atkRRow.appendChild(atkRSlider);
+        body.appendChild(atkRRow);
 
         // === Save / Money / Tickets 區塊 ===
         var sep1 = document.createElement('div');
@@ -440,6 +443,23 @@
             if (window._mp_magnetlock) { try { p.magnet = 999; p.magnetMul = 99; } catch(e){} }
             if (window._mp_nocd) { try { p.cdMul = 0.01; } catch(e){} }
             if (window._mp_infre) { try { p.rerolls = 0; p.rerollBonus = 99; } catch(e){} }
+            // 攻擊範圍放大：放大所有招式的 radius
+            if (window._mp_atkradius && window._mp_atkradius > 1) {
+                try {
+                    var moves = p.moves;
+                    if (moves && moves.length) {
+                        for (var mi = 0; mi < moves.length; mi++) {
+                            var m = moves[mi];
+                            if (m && m.radius && !m._origRadius) {
+                                m._origRadius = m.radius;
+                            }
+                            if (m && m._origRadius) {
+                                m.radius = m._origRadius * window._mp_atkradius;
+                            }
+                        }
+                    }
+                } catch(e) {}
+            }
             // Kill Aura: set all enemies hp to 0 and mark dead
             if (window._mp_killaura) {
                 try {

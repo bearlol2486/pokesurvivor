@@ -4,8 +4,7 @@
 // One-Hit: set all enemies hp to 1 each tick
 // Defense: hook player.hurt to no-op (god mode already does this via hp=maxHp)
 (function(){
-    if (window._mp_loaded) return;
-    window._mp_loaded = true;
+    if (window._mp_loaded) { var old = document.getElementById('_ps_modpanel'); if (old) old.remove(); }
 
     function findGameObject() {
         for (var k in window) {

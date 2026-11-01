@@ -124,10 +124,93 @@
         var critVal = _statRow('CRIT', function(p){ p.critChance = 1.0; });
         var lvlVal = _statRow('LEVEL', function(p){ p.level = 99; p.xp = 0; });
 
+        // 自訂數值輸入框
+        function _inputRow(label, placeholder, setFn) {
+            var r = _row(label);
+            var input = document.createElement('input');
+            input.type = 'number';
+            input.placeholder = placeholder;
+            input.style.cssText = 'width:80px;background:#1a1a1e;color:#fff;border:1px solid #2a2a2e;border-radius:3px;padding:2px 6px;font-family:monospace;font-size:11px;text-align:right;';
+            var b = _btn('SET', '#285078', function(){
+                var v = parseFloat(input.value);
+                if (isNaN(v)) return;
+                var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
+                if (!p) return;
+                try { setFn(p, v); } catch(e) {}
+            });
+            r.appendChild(input);
+            r.appendChild(b);
+        }
+        _inputRow('Set HP', 'hp', function(p, v){ p.hp = v; });
+        _inputRow('Set MaxHP', 'maxHp', function(p, v){ p.maxHp = v; p.hp = v; });
+        _inputRow('Set ATK', 'atkMul', function(p, v){ p.atkMul = v; });
+        _inputRow('Set SPD', 'spd', function(p, v){ p.spd = v; });
+        _inputRow('Set CRIT', '0-1', function(p, v){ p.critChance = v; });
+        _inputRow('Set LEVEL', 'lvl', function(p, v){ p.level = v; p.xp = 0; });
+        _inputRow('Set XP', 'xp', function(p, v){ p.xp = v; });
+
         _toggle('God Mode', 'godmode', 'ON', 'OFF', '#00b450', '#3c3c41');
         _toggle('Kill Aura', 'killaura', 'ON', 'OFF', '#b41818', '#3c3c41');
         _toggle('ATK Lock', 'atklock', 'ON', 'OFF', '#b41818', '#3c3c41');
         _toggle('SPD Lock', 'spdlock', 'ON', 'OFF', '#00a2ff', '#3c3c41');
+
+        // === Save / Money / Tickets 區塊 ===
+        var sep1 = document.createElement('div');
+        sep1.textContent = '─ Save / Money ─';
+        sep1.style.cssText = 'color:#888;padding:6px 0 2px;font-size:10px;border-top:1px solid #1a1a1e;margin-top:6px;';
+        body.appendChild(sep1);
+
+        // 顯示目前 save 值
+        var saveInfo = document.createElement('div');
+        saveInfo.style.cssText = 'color:#888;font-size:10px;padding:2px 0;';
+        body.appendChild(saveInfo);
+
+        // 設定 coins
+        function _saveInputRow(label, placeholder, getFn, setFn) {
+            var r = _row(label);
+            var input = document.createElement('input');
+            input.type = 'number';
+            input.placeholder = placeholder;
+            input.style.cssText = 'width:80px;background:#1a1a1e;color:#fff;border:1px solid #2a2a2e;border-radius:3px;padding:2px 6px;font-family:monospace;font-size:11px;text-align:right;';
+            var b = _btn('SET', '#285078', function(){
+                var v = parseInt(input.value);
+                if (isNaN(v)) return;
+                var G = window.GAME;
+                if (!G || !G.DB || !G.DB.save) return;
+                try {
+                    setFn(G.DB.save, v);
+                    saveInfo.textContent = 'set ok';
+                    // 嘗試立刻同步到雲端
+                    if (G.DB.saveNow) {
+                        try { G.DB.saveNow(); } catch(e){}
+                    }
+                } catch(e) { saveInfo.textContent = 'err: ' + e.message; }
+            });
+            r.appendChild(input);
+            r.appendChild(b);
+        }
+        _saveInputRow('Coins', 'amount', function(s){return s.coins;}, function(s, v){ s.coins = v; });
+        _saveInputRow('T1 Tickets', '單抽', function(s){return s.tickets && s.tickets.t1;}, function(s, v){ if(!s.tickets) s.tickets={t1:0,t10:0}; s.tickets.t1 = v; });
+        _saveInputRow('T10 Tickets', '十連', function(s){return s.tickets && s.tickets.t10;}, function(s, v){ if(!s.tickets) s.tickets={t1:0,t10:0}; s.tickets.t10 = v; });
+        _saveInputRow('Candy', 'candy', function(s){return s.candy;}, function(s, v){ s.candy = v; });
+
+        // 一鍵加 99999 錢 + 99 抽獎卷
+        var maxBtn = _btn('MAX ALL (coins+tickets+candy)', '#b41818', function(){
+            var G = window.GAME;
+            if (!G || !G.DB || !G.DB.save) return;
+            var s = G.DB.save;
+            try {
+                s.coins = 999999;
+                if (!s.tickets) s.tickets = {t1:0, t10:0};
+                s.tickets.t1 = 999;
+                s.tickets.t10 = 999;
+                s.candy = 9999;
+                saveInfo.textContent = 'MAX done';
+                if (G.DB.saveNow) try { G.DB.saveNow(); } catch(e){}
+            } catch(e) { saveInfo.textContent = 'err: ' + e.message; }
+        });
+        maxBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#b41818;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:10px;';
+        body.appendChild(maxBtn);
 
         var status = document.createElement('div');
         status.textContent = 'waiting...';
@@ -187,6 +270,14 @@
                     status.textContent = 'killaura: ' + killed + ' enemies killed';
                 } catch(err) {}
             }
+            // 更新 save 資訊顯示
+            try {
+                var G2 = window.GAME;
+                if (G2 && G2.DB && G2.DB.save) {
+                    var sv = G2.DB.save;
+                    saveInfo.textContent = 'coins:' + (sv.coins||0) + ' t1:' + (sv.tickets?sv.tickets.t1:0) + ' t10:' + (sv.tickets?sv.tickets.t10:0) + ' candy:' + (sv.candy||0);
+                }
+            } catch(e) {}
         }, 200);
     }
 

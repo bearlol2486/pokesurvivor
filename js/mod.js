@@ -52,7 +52,9 @@
     }
 
     function makePanel(GAME) {
-        if (document.getElementById('_ps_modpanel')) return;
+        // Remove any existing panel first (handles bfcache restore case)
+        var old = document.getElementById('_ps_modpanel');
+        if (old) old.remove();
         var sg = document.createElement('div');
         sg.id = '_ps_modpanel';
         sg.style.cssText = 'position:fixed;top:80px;left:10px;z-index:99999;width:240px;background:#0e0f13;border:1px solid #00a2ff;border-radius:8px;font-family:monospace;color:#eee;font-size:12px;padding:8px;user-select:none;';

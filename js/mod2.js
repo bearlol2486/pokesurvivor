@@ -393,26 +393,29 @@
                 // 等 1 秒後把玩家傳送到裂縫附近
                 setTimeout(function(){
                     var p = G.Game.player;
-                    if (!p) return;
-                    var arena = G.Rift && G.Rift.arena;
+                    if (!p) { alert('no player'); return; }
+                    var arena = null;
+                    // 嘗試多種方式拿 arena
+                    try { arena = G.Rift.arena; } catch(e){}
+                    var info = 'arena: ' + (arena ? typeof arena : 'null');
+                    if (arena) info += '\narena keys: ' + Object.keys(arena).slice(0,15).join(',');
                     if (arena && arena.x !== undefined && arena.y !== undefined) {
-                        // 傳送到裂縫旁邊
                         p.x = arena.x;
                         p.y = arena.y;
                         if (p.bodyH) p.bodyH.x = arena.x, p.bodyH.y = arena.y;
                         alert('傳送到裂縫: ' + arena.x + ',' + arena.y);
                     } else {
-                        // 找最近敵人傳送（裂縫通常伴隨敵人）
+                        // 找最近敵人傳送
                         var enemies = G.EnemyMgr && G.EnemyMgr.all ? G.EnemyMgr.all() : [];
                         if (enemies.length > 0 && p) {
                             p.x = enemies[0].x;
                             p.y = enemies[0].y;
-                            alert('傳送到最近敵人');
+                            alert(info + '\n傳送到最近敵人: ' + enemies[0].x + ',' + enemies[0].y);
                         } else {
-                            alert('裂縫已召喚，但找不到位置傳送');
+                            alert(info + '\n找不到裂縫位置');
                         }
                     }
-                }, 1000);
+                }, 1500);
                 alert('rift triggered\n1 秒後傳送到裂縫');
             } catch(e) { alert('err: ' + e.message); }
         });

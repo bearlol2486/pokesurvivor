@@ -310,8 +310,23 @@
                 var G = window.GAME;
                 if (!G || !G.Game || !G.Game.st) { alert('no game state'); return; }
                 try {
-                    G.Game.st.time = seconds;
-                    alert('time set to ' + seconds + 's (' + Math.floor(seconds/60) + ' min)');
+                    var st = G.Game.st;
+                    // 直接設 time
+                    st.time = seconds;
+                    // 也嘗試用 defineProperty 強制覆蓋 getter
+                    try {
+                        var origDesc = Object.getOwnPropertyDescriptor(st, 'time');
+                        Object.defineProperty(st, 'time', {
+                            value: seconds,
+                            writable: true,
+                            configurable: true,
+                            enumerable: true
+                        });
+                    } catch(e){}
+                    // 設一個 flag 讓 refresh loop 持續鎖定時間
+                    window._mp_jumptime = seconds;
+                    window._mp_jumptarget = seconds;
+                    alert('time set to ' + seconds + 's (' + Math.floor(seconds/60) + ' min)\nrefresh loop 會持續鎖定');
                 } catch(e) { alert('err: ' + e.message); }
             });
             r.appendChild(b);
@@ -508,6 +523,12 @@
             if (window._mp_magnetlock) { try { p.magnet = 999; p.magnetMul = 99; } catch(e){} }
             if (window._mp_nocd) { try { p.cdMul = 0.01; } catch(e){} }
             if (window._mp_infre) { try { p.rerolls = 0; p.rerollBonus = 99; } catch(e){} }
+            // 時間鎖定
+            if (window._mp_jumptime && window.GAME && window.GAME.Game && window.GAME.Game.st) {
+                try {
+                    window.GAME.Game.st.time = window._mp_jumptime;
+                } catch(e){}
+            }
             // Kill Aura: set all enemies hp to 0 and mark dead
             if (window._mp_killaura) {
                 try {

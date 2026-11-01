@@ -358,7 +358,7 @@
                 // dexId 隨機選一個寶可夢
                 var dexIds = [3, 6, 9, 65, 68, 76, 94, 130, 131, 143, 149, 150];
                 var dexId = dexIds[Math.floor(Math.random() * dexIds.length)];
-                var enemy = G.Enemy(dexId, p.x + 50, p.y, {'hp':1,'spd':1,'dmg':1}, true);
+                var enemy = new G.Enemy(dexId, p.x + 50, p.y, {'hp':1,'spd':1,'dmg':1}, true);
                 if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
                     G.EnemyMgr.add(enemy);
                     alert('boss 召喚: dex #' + dexId);

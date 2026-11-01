@@ -75,12 +75,12 @@
         window._mp_loaded = true;
         var sg = document.createElement('div');
         sg.id = '_ps_modpanel';
-        sg.style.cssText = 'position:fixed;top:80px;left:10px;z-index:99999;width:260px;background:linear-gradient(135deg,rgba(255,248,235,0.96),rgba(245,230,210,0.96));border:2px solid #d4a574;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#5a3e2b;font-size:12px;padding:10px;box-shadow:0 4px 20px rgba(139,90,43,0.3);user-select:none;backdrop-filter:blur(8px);';
+        sg.style.cssText = 'position:fixed;top:80px;left:10px;z-index:99999;width:260px;background-image:linear-gradient(135deg,rgba(255,248,235,0.85),rgba(245,230,210,0.85)),url(assets/panel-bg.jpg);background-size:cover;background-position:center;border:2px solid #d4a574;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#5a3e2b;font-size:12px;padding:10px;box-shadow:0 4px 20px rgba(139,90,43,0.3);user-select:none;backdrop-filter:blur(8px);';
         document.body.appendChild(sg);
 
         var title = document.createElement('div');
         title.textContent = '✦ Mod Panel ✦';
-        title.style.cssText = 'color:#8b5a2b;font-weight:700;padding:6px 0 10px;cursor:move;font-size:14px;text-align:center;border-bottom:1px solid #d4a574;margin-bottom:4px;letter-spacing:1px;';
+        title.style.cssText = 'color:#5a3e2b;font-weight:700;padding:6px 60px 10px 0;cursor:move;font-size:14px;text-align:center;border-bottom:1px solid #d4a574;margin-bottom:4px;letter-spacing:1px;text-shadow:0 1px 2px rgba(255,255,255,0.8);';
         sg.appendChild(title);
 
         var closeBtn = document.createElement('button');
@@ -100,12 +100,14 @@
             if (minimized) {
                 body.style.display = 'none';
                 sg.style.width = 'auto';
-                sg.style.height = 'auto';
-                sg.style.padding = '6px 32px 6px 10px';
+                sg.style.padding = '6px 10px';
+                title.style.paddingRight = '60px';
                 minBtn.textContent = '+';
             } else {
                 body.style.display = '';
+                sg.style.width = '260px';
                 sg.style.padding = '10px';
+                title.style.paddingRight = '60px';
                 minBtn.textContent = '—';
             }
         };

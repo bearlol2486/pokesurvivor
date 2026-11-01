@@ -75,7 +75,14 @@
         window._mp_loaded = true;
         var sg = document.createElement('div');
         sg.id = '_ps_modpanel';
-        sg.style.cssText = 'position:fixed;top:80px;left:10px;z-index:99999;width:260px;background-image:linear-gradient(135deg,rgba(255,248,235,0.5),rgba(245,230,210,0.5)),url(assets/panel-bg.jpg);background-size:cover;background-position:center;border:2px solid #d4a574;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#5a3e2b;font-size:12px;padding:10px;box-shadow:0 4px 20px rgba(139,90,43,0.3);user-select:none;backdrop-filter:blur(8px);';
+        // 用變數控制透明度（0=全透明 1=全不透明）
+        window._mp_bgalpha = 0.5;
+        function updateBg() {
+            var a = window._mp_bgalpha;
+            sg.style.backgroundImage = 'linear-gradient(135deg,rgba(255,248,235,' + a + '),rgba(245,230,210,' + a + ')),url(assets/panel-bg2.jpg)';
+        }
+        sg.style.cssText = 'position:fixed;top:80px;left:10px;z-index:99999;width:260px;background-size:cover;background-position:center;border:2px solid #d4a574;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#5a3e2b;font-size:12px;padding:10px;box-shadow:0 4px 20px rgba(139,90,43,0.3);user-select:none;backdrop-filter:blur(8px);';
+        updateBg();
         document.body.appendChild(sg);
 
         var title = document.createElement('div');
@@ -93,8 +100,7 @@
             if (!document.getElementById('_ps_modpill')) {
                 var pill = document.createElement('button');
                 pill.id = '_ps_modpill';
-                pill.textContent = '✦';
-                pill.style.cssText = 'position:fixed;top:80px;left:10px;z-index:99999;width:40px;height:40px;background:linear-gradient(135deg,#fff8eb,#f5e6d2);color:#8b5a2b;border:2px solid #d4a574;border-radius:50%;cursor:pointer;font-size:18px;box-shadow:0 2px 10px rgba(139,90,43,0.4);';
+                pill.style.cssText = 'position:fixed;top:80px;left:10px;z-index:2147483647;width:48px;height:48px;background-image:url(assets/panel-bg2.jpg);background-size:cover;background-position:center;border:2px solid #d4a574;border-radius:50%;cursor:pointer;box-shadow:0 2px 12px rgba(139,90,43,0.5);padding:0;overflow:hidden;';
                 document.body.appendChild(pill);
                 pill.onclick = function(){
                     sg.style.display = '';
@@ -182,6 +188,28 @@
             });
             r.appendChild(b);
         }
+
+        // 背景透明度滑桿
+        var bgRow = document.createElement('div');
+        bgRow.style.cssText = 'padding:6px 2px;border-bottom:1px solid rgba(212,165,116,0.25);';
+        var bgLabel = document.createElement('div');
+        bgLabel.textContent = '背景透明度: 50%';
+        bgLabel.style.cssText = 'color:#6b4226;font-weight:500;font-size:11px;margin-bottom:4px;';
+        bgRow.appendChild(bgLabel);
+        var bgSlider = document.createElement('input');
+        bgSlider.type = 'range';
+        bgSlider.min = 0;
+        bgSlider.max = 100;
+        bgSlider.value = 50;
+        bgSlider.style.cssText = 'width:100%;accent-color:#d4a574;';
+        bgSlider.oninput = function(){
+            var v = parseInt(bgSlider.value) / 100;
+            window._mp_bgalpha = v;
+            updateBg();
+            bgLabel.textContent = '背景透明度: ' + bgSlider.value + '%';
+        };
+        bgRow.appendChild(bgSlider);
+        body.appendChild(bgRow);
 
         var hpVal = _statRow('HP', function(p){ p.hp = p.maxHp; });
         var maxHpVal = _statRow('MaxHP', function(p){ p.maxHp = 99999; p.hp = 99999; });

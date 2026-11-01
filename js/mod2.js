@@ -381,13 +381,24 @@
                 if (G.Sprites && G.Sprites.preload) {
                     try { G.Sprites.preload([dexNum]); } catch(e){}
                 }
-                // scale 物件
-                var scale = {'hp':1,'spd':1,'dmg':1};
+                // scale 物件 — 用大 HP 防止立刻死亡
+                var scale = {'hp':10,'spd':1,'dmg':1};
                 // 構造 boss（isBoss=true）
                 var enemy = new G.Enemy(bossDef, p.x + 50, p.y, scale, true);
                 if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
+                    // 確保 hp/maxHp 設好
+                    try {
+                        if (enemy.maxHp) {
+                            enemy.hp = enemy.maxHp;
+                        } else {
+                            enemy.maxHp = 1000;
+                            enemy.hp = 1000;
+                        }
+                    } catch(e){}
                     G.EnemyMgr.add(enemy);
-                    alert('boss 召喚: dex #' + dexNum + '\nname: ' + (enemy.name || '?') + '\nx:' + Math.floor(enemy.x) + ' y:' + Math.floor(enemy.y));
+                    // 用 flag 持續保護這個 boss 不被殺
+                    window._mp_bossprotect = enemy;
+                    alert('boss 召喚: ' + (enemy.name || '?') + '\nhp: ' + enemy.hp + '/' + enemy.maxHp);
                 } else {
                     alert('Enemy 建構失敗');
                 }
@@ -587,6 +598,16 @@
             if (window._mp_jumptime && window.GAME && window.GAME.Game && window.GAME.Game.st) {
                 try {
                     window.GAME.Game.st.time = window._mp_jumptime;
+                } catch(e){}
+            }
+            // 保護 boss HP 不被殺
+            if (window._mp_bossprotect) {
+                try {
+                    var b = window._mp_bossprotect;
+                    if (b && b.hp !== undefined && b.maxHp) {
+                        if (b.hp < b.maxHp) b.hp = b.maxHp;
+                        if (b.dead) b.dead = false;
+                    }
                 } catch(e){}
             }
             // Kill Aura: set all enemies hp to 0 and mark dead

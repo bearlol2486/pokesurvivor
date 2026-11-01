@@ -376,65 +376,6 @@
         clearMovesBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
         body.appendChild(clearMovesBtn);
 
-        // === 召喚裂縫 ===
-        var sep4 = document.createElement('div');
-        sep4.textContent = '✦ Rift ✦';
-        sep4.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
-        body.appendChild(sep4);
-
-        var riftBtn = _btn('召喚裂縫', '#8e44ad', function(){
-            var G = window.GAME;
-            if (!G || !G.Game) { alert('no game'); return; }
-            try {
-                var p = G.Game.player;
-                if (!p) { alert('no player'); return; }
-                // 先記住玩家位置
-                var px = p.x, py = p.y;
-                // 設時間觸發裂縫
-                if (G.Game.st) G.Game.st.time = 2100;
-                if (G.Rift && G.Rift.onEvent) {
-                    G.Rift.onEvent(['rift', 'rift', 1]);
-                }
-                // 等 1.5 秒裂縫生成後，把裂縫位置改成玩家位置
-                setTimeout(function(){
-                    try {
-                        // 嘗試透過 Rift 物件找 arena
-                        var arena = null;
-                        try { arena = G.Rift.arena; } catch(e){}
-                        if (arena && arena.x !== undefined) {
-                            // 把裂縫位置改成玩家位置
-                            arena.x = px;
-                            arena.y = py;
-                            if (arena.back) { arena.back.x = px; arena.back.y = py; }
-                            alert('裂縫移到玩家位置: ' + Math.floor(px) + ',' + Math.floor(py));
-                        } else {
-                            // fallback: 傳送玩家到最遠敵人
-                            var enemies = G.EnemyMgr && G.EnemyMgr.all ? G.EnemyMgr.all() : [];
-                            if (enemies.length > 0 && p) {
-                                var farthest = enemies[0];
-                                var maxDist = 0;
-                                for (var ei = 0; ei < enemies.length; ei++) {
-                                    var e = enemies[ei];
-                                    if (e && e.x !== undefined) {
-                                        var d = (e.x-px)*(e.x-px) + (e.y-py)*(e.y-py);
-                                        if (d > maxDist) { maxDist = d; farthest = e; }
-                                    }
-                                }
-                                p.x = farthest.x;
-                                p.y = farthest.y;
-                                alert('arena 找不到，傳送到最遠敵人');
-                            } else {
-                                alert('裂縫已召喚');
-                            }
-                        }
-                    } catch(e) { alert('err: ' + e.message); }
-                }, 1500);
-                alert('rift triggered\n1.5 秒後把裂縫移過來');
-            } catch(e) { alert('err: ' + e.message); }
-        });
-        riftBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#8e44ad;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
-        body.appendChild(riftBtn);
-
         // === Save / Money / Tickets 區塊 ===
         var sep1 = document.createElement('div');
         sep1.textContent = '✦ Save / Money ✦';

@@ -52,19 +52,26 @@
     }
 
     function makePanel(GAME) {
+        // 清掉所有舊的 refresh interval（防止多個 mod2.js 同時跑）
+        if (window._mp_intervals) {
+            window._mp_intervals.forEach(function(iv){ try { clearInterval(iv); } catch(e){} });
+        }
+        window._mp_intervals = [];
+
         // 強制移除所有舊 panel — 抓所有 fixed + z-index:99999 的 div
-        // （舊版 app.min.js 注入的 panel 沒有 id，只能靠 style 抓）
         var allDivs = document.querySelectorAll('div');
         allDivs.forEach(function(el){
             try {
                 if (el.style && el.style.position === 'fixed' && (el.style.zIndex === '99999' || el.style.zIndex === 99999)) {
-                    // 確認是 panel（有 Mod Panel 文字 或 _mp 標記）
                     if (el.textContent && el.textContent.indexOf('Mod Panel') !== -1) {
                         el.remove();
                     }
                 }
             } catch(e) {}
         });
+        // 重設所有 toggle 狀態為 false（避免舊狀態殘留）
+        var toggleKeys = ['godmode','killaura','atklock','spdlock','xpboost','magnetlock','nocd','infre'];
+        toggleKeys.forEach(function(k){ window['_mp_' + k] = false; });
         window._mp_loaded = true;
         var sg = document.createElement('div');
         sg.id = '_ps_modpanel';
@@ -301,7 +308,7 @@
         document.addEventListener('mouseup', function(){ drag = false; });
         document.addEventListener('touchend', function(){ drag = false; });
 
-        setInterval(function() {
+        var refreshIv = setInterval(function() {
             var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
             if (!p) { status.textContent = 'no player (start a run)'; return; }
             status.textContent = 'player active';
@@ -345,6 +352,8 @@
                 }
             } catch(e) {}
         }, 200);
+        // 記錄 interval 以便下次注入時清除
+        window._mp_intervals.push(refreshIv);
     }
 
     function tryInject() {

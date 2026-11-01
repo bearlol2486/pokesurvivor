@@ -298,6 +298,70 @@
         _speedBtn('加速 2x', 2);
         _speedBtn('加速 4x', 4);
 
+        // === 加技能 ===
+        var sep3 = document.createElement('div');
+        sep3.textContent = '✦ Add Move ✦';
+        sep3.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
+        body.appendChild(sep3);
+
+        var moveList = [
+            ['tackle','Placaje','melee'],['scratch','Arañazo','melee'],['ember','Ascuas','projectile'],
+            ['flamethrower','Lanzallamas','cone'],['heat-wave','Onda Ígnea','nova'],['bubble','Burbuja','nova'],
+            ['hydro-pump','Hidrobomba','beam'],['aqua-ring','Acua Aro','buff'],['vine-whip','Látigo Cepa','melee'],
+            ['razor-leaf','Hoja Afilada','boomerang'],['leaf-storm','Tormenta Floral','orbit'],
+            ['giga-drain','Hierba Lazo','aura'],['thunder-shock','Impactrueno','projectile'],
+            ['discharge','Chispazo','aura'],['thunderbolt','Rayo','chain'],['psybeam','Psicorrayo','beam'],
+            ['psychic','Psíquico','nova'],['mud-shot','Disparo Lodo','nova'],['gust','Tornado','orbit'],
+            ['quick-attack','Ataque Rápido','melee'],['swords-dance','Danza Espada','buff'],
+            ['nasty-plot','Maquinación','buff'],['agility','Agilidad','buff'],['harden','Fortaleza','buff'],
+            ['bite','Mordisco','melee'],['body-slam','Golpe Cuerpo','melee'],['air-slash','Tajo Aéreo','melee'],
+            ['ancient-power','Poder Pasado','projectile'],['bubble-beam','Rayo Burbuja','beam'],
+            ['bug-bite','Picadura','melee'],['bug-buzz','Zumbido','aura'],['bulldoze','Terratemblor','nova'],
+            ['acid-spray','Ácido','projectile'],['bonemerang','Huesomerang','boomerang']
+        ];
+
+        var moveRow = document.createElement('div');
+        moveRow.style.cssText = 'padding:6px 2px;';
+        var moveSelect = document.createElement('select');
+        moveSelect.style.cssText = 'width:100%;background:rgba(255,255,255,0.8);color:#5a3e2b;border:1px solid #d4a574;border-radius:6px;padding:4px;font-size:11px;font-family:inherit;';
+        for (var mi = 0; mi < moveList.length; mi++) {
+            var opt = document.createElement('option');
+            opt.value = moveList[mi][0];
+            opt.textContent = moveList[mi][1] + ' (' + moveList[mi][2] + ')';
+            moveSelect.appendChild(opt);
+        }
+        moveRow.appendChild(moveSelect);
+        body.appendChild(moveRow);
+
+        var addMoveBtn = _btn('加入技能', '#27ae60', function(){
+            var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
+            if (!p) return;
+            var moveId = moveSelect.value;
+            try {
+                var G = window.GAME;
+                if (G.Moves && G.Moves.instance) {
+                    var moveInstance = G.Moves.instance(moveId, 1);
+                    if (moveInstance && p.moves) {
+                        p.moves.push(moveInstance);
+                        status.textContent = 'added: ' + moveId;
+                    }
+                }
+            } catch(e) { status.textContent = 'err: ' + e.message; }
+        });
+        addMoveBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#27ae60;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
+        body.appendChild(addMoveBtn);
+
+        var clearMovesBtn = _btn('清空所有技能', '#c0392b', function(){
+            var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
+            if (!p || !p.moves) return;
+            try {
+                p.moves.length = 0;
+                status.textContent = 'moves cleared';
+            } catch(e) {}
+        });
+        clearMovesBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
+        body.appendChild(clearMovesBtn);
+
         // === Save / Money / Tickets 區塊 ===
         var sep1 = document.createElement('div');
         sep1.textContent = '✦ Save / Money ✦';

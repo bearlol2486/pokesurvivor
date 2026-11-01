@@ -1,12 +1,10 @@
-// PokéSurvivor Mod Panel — standalone loader
-// Auto-detects the game object by finding the one with 'BUILT':true and 'Game' property
-// Then exposes it as window.GAME and injects the mod panel UI
+// PokéSurvivor Mod Panel v2 — uses actual property names
+// atk → atkMul (multiplier), no def/dmg direct, hp/maxHp/level work
 (function(){
     if (window._mp_loaded) return;
     window._mp_loaded = true;
 
     function findGameObject() {
-        // Method 1: scan window for object with BUILT + Game
         for (var k in window) {
             try {
                 var v = window[k];
@@ -26,7 +24,7 @@
         document.body.appendChild(sg);
 
         var title = document.createElement('div');
-        title.textContent = 'Mod Panel';
+        title.textContent = 'Mod Panel v2';
         title.style.cssText = 'color:#00a2ff;font-weight:bold;padding:4px 0 8px;cursor:move;';
         sg.appendChild(title);
 
@@ -58,7 +56,7 @@
             return b;
         }
 
-        function _statRow(label, setKey) {
+        function _statRow(label, displayKey, setFn) {
             var r = _row(label);
             var val = document.createElement('span');
             val.textContent = '?';
@@ -68,18 +66,12 @@
                 var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
                 if (!p) return;
                 try {
-                    if (setKey === 'hp') { p.hp = p.maxHp; }
-                    else if (setKey === 'level') { p.level = 99; p.xp = 0; p.xpNext = 999999; }
-                    else if (setKey === 'dmg') { p.dmg = 99999; }
-                    else if (setKey === 'crit') { p.critChance = 1.0; }
-                    else if (setKey === 'spd') { p.spd = 20; p.speed = 20; }
-                    else if (setKey === 'atk') { p.atk = 999; }
-                    else if (setKey === 'def') { p.def = 999; }
-                    else { p[setKey] = 9999; }
+                    setFn(p);
                     val.textContent = 'SET';
-                } catch(e) {}
+                } catch(e) { val.textContent = 'ERR'; }
             });
             r.appendChild(b);
+            return val;
         }
 
         function _toggle(label, stateKey, onText, offText, onColor, offColor) {
@@ -92,15 +84,40 @@
             r.appendChild(b);
         }
 
-        _statRow('HP', 'hp');
-        _statRow('ATK', 'atk');
-        _statRow('DEF', 'def');
-        _statRow('SPD', 'spd');
-        _statRow('CRIT', 'crit');
-        _statRow('DMG', 'dmg');
-        _statRow('LEVEL', 'level');
+        // HP: set to maxHp
+        var hpVal = _statRow('HP', 'hp', function(p){
+            p.hp = p.maxHp;
+        });
+        // MaxHp boost: set maxHp to huge
+        var maxHpVal = _statRow('MaxHP', 'maxHp', function(p){
+            p.maxHp = 99999;
+            p.hp = 99999;
+        });
+        // atkMul: attack multiplier
+        var atkVal = _statRow('ATK', 'atkMul', function(p){
+            p.atkMul = 99;
+        });
+        // spd: speed
+        var spdVal = _statRow('SPD', 'spd', function(p){
+            p.spd = 500;
+        });
+        // critChance
+        var critVal = _statRow('CRIT', 'critChance', function(p){
+            p.critChance = 1.0;
+        });
+        // level
+        var lvlVal = _statRow('LEVEL', 'level', function(p){
+            p.level = 99;
+            p.xp = 0;
+        });
+        // xp
+        var xpVal = _statRow('XP', 'xp', function(p){
+            p.xp = 999999;
+        });
+
         _toggle('God Mode', 'godmode', 'ON', 'OFF', '#00b450', '#3c3c41');
-        _toggle('One-Hit', 'onehit', 'ON', 'OFF', '#b41818', '#3c3c41');
+        _toggle('Max ATK Lock', 'atklock', 'ON', 'OFF', '#b41818', '#3c3c41');
+        _toggle('Speed Hack', 'speedlock', 'ON', 'OFF', '#00a2ff', '#3c3c41');
 
         var status = document.createElement('div');
         status.textContent = 'waiting...';
@@ -130,13 +147,22 @@
         document.addEventListener('mouseup', function(){ drag = false; });
         document.addEventListener('touchend', function(){ drag = false; });
 
-        // Auto-refresh loop
+        // Auto-refresh loop: update displays + apply locks
         setInterval(function() {
             var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
             if (!p) { status.textContent = 'no player (start a run)'; return; }
             status.textContent = 'player active';
+            try { hpVal.textContent = Math.floor(p.hp) + '/' + Math.floor(p.maxHp); } catch(e){}
+            try { maxHpVal.textContent = Math.floor(p.maxHp); } catch(e){}
+            try { atkVal.textContent = (p.atkMul || 0).toFixed(2); } catch(e){}
+            try { spdVal.textContent = (p.spd || 0).toFixed(1); } catch(e){}
+            try { critVal.textContent = ((p.critChance || 0) * 100).toFixed(0) + '%'; } catch(e){}
+            try { lvlVal.textContent = p.level; } catch(e){}
+            try { xpVal.textContent = p.xp + '/' + (p.xpNext || '?'); } catch(e){}
+            // Apply locks
             if (window._mp_godmode) { try { p.hp = p.maxHp; } catch(e){} }
-            if (window._mp_onehit) { try { p.dmg = 99999; } catch(e){} }
+            if (window._mp_atklock) { try { p.atkMul = 99; } catch(e){} }
+            if (window._mp_speedlock) { try { p.spd = 500; } catch(e){} }
         }, 500);
     }
 
@@ -149,11 +175,11 @@
                 window.GAME = g;
                 clearInterval(iv);
                 makePanel(g);
-                console.log('[ModPanel] Loaded, GAME exposed');
+                console.log('[ModPanel v2] Loaded, GAME exposed');
             }
             if (tries > 60) {
                 clearInterval(iv);
-                console.log('[ModPanel] Gave up waiting for game');
+                console.log('[ModPanel v2] Gave up waiting for game');
             }
         }, 500);
     }

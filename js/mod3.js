@@ -391,10 +391,14 @@
                     try {
                         enemy.maxHp = 99999;
                         enemy.hp = 99999;
+                        // hook hurt 方法讓 boss 不扣血
+                        enemy.hurt = function() { return; };
+                        // hook die 方法讓 boss 不死
+                        enemy.die = function() { return; };
                     } catch(e){}
                     G.EnemyMgr.add(enemy);
                     window._mp_bossprotect = enemy;
-                    alert('step2: added to EnemyMgr\nhp: ' + enemy.hp + '\nmaxHp: ' + enemy.maxHp);
+                    alert('step2: added + hurt hooked\nhp: ' + enemy.hp + '\nmaxHp: ' + enemy.maxHp);
                 }
             } catch(e) { alert('err: ' + e.message); }
             // 恢復 Kill Aura 狀態

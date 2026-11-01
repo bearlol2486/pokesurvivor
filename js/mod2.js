@@ -142,12 +142,17 @@
             return val;
         }
 
-        function _toggle(label, stateKey, onText, offText, onColor, offColor) {
+        function _toggle(label, stateKey, onText, offText, onColor, offColor, offFn) {
             var r = _row(label);
             var b = _btn(offText, offColor, function(){
-                window['_mp_' + stateKey] = !window['_mp_' + stateKey];
-                b.textContent = window['_mp_' + stateKey] ? onText : offText;
-                b.style.background = window['_mp_' + stateKey] ? onColor : offColor;
+                var newState = !window['_mp_' + stateKey];
+                window['_mp_' + stateKey] = newState;
+                b.textContent = newState ? onText : offText;
+                b.style.background = newState ? onColor : offColor;
+                // 關閉時執行還原函數
+                if (!newState && offFn) {
+                    try { offFn(); } catch(e) {}
+                }
             });
             r.appendChild(b);
         }
@@ -189,11 +194,23 @@
 
         _toggle('God Mode', 'godmode', 'ON', 'OFF', '#00b450', '#3c3c41');
         _toggle('Kill Aura', 'killaura', 'ON', 'OFF', '#b41818', '#3c3c41');
-        _toggle('ATK Lock', 'atklock', 'ON', 'OFF', '#b41818', '#3c3c41');
-        _toggle('SPD Lock', 'spdlock', 'ON', 'OFF', '#00a2ff', '#3c3c41');
+        _toggle('ATK Lock', 'atklock', 'ON', 'OFF', '#b41818', '#3c3c41', function(){
+            var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
+            if (p) try { p.atkMul = 1; } catch(e){}
+        });
+        _toggle('SPD Lock', 'spdlock', 'ON', 'OFF', '#00a2ff', '#3c3c41', function(){
+            var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
+            if (p) try { p.spd = 1; p.speed = 1; p.baseSpd = 1; } catch(e){}
+        });
         _toggle('XP Boost', 'xpboost', 'ON', 'OFF', '#00ff88', '#3c3c41');
-        _toggle('Magnet Lock', 'magnetlock', 'ON', 'OFF', '#ff9ed8', '#3c3c41');
-        _toggle('No Cooldown', 'nocd', 'ON', 'OFF', '#ffaa00', '#3c3c41');
+        _toggle('Magnet Lock', 'magnetlock', 'ON', 'OFF', '#ff9ed8', '#3c3c41', function(){
+            var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
+            if (p) try { p.magnet = 12; p.magnetMul = 1; } catch(e){}
+        });
+        _toggle('No Cooldown', 'nocd', 'ON', 'OFF', '#ffaa00', '#3c3c41', function(){
+            var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
+            if (p) try { p.cdMul = 1; } catch(e){}
+        });
         _toggle('Inf Reroll', 'infre', 'ON', 'OFF', '#9d6bff', '#3c3c41');
 
         // === Save / Money / Tickets 區塊 ===

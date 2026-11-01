@@ -342,36 +342,6 @@
         _timeBtn('30 分鐘', 1800);
         _timeBtn('34 分鐘', 2040);
 
-        // === 召喚首領 ===
-        var sepBoss = document.createElement('div');
-        sepBoss.textContent = '✦ Boss ✦';
-        sepBoss.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
-        body.appendChild(sepBoss);
-
-        var bossBtn = _btn('召喚首領', '#c0392b', function(){
-            var G = window.GAME;
-            if (!G || !G.Game || !G.Game.player) { alert('no player'); return; }
-            var p = G.Game.player;
-            try {
-                if (!G.Enemies || !G.Enemies.BOSSES || G.Enemies.BOSSES.length === 0) { alert('no BOSSES'); return; }
-                // 拿第一個 boss 定義
-                var bossDef = G.Enemies.BOSSES[0];
-                if (!bossDef) { alert('bossDef null'); return; }
-                // scale
-                var scale = G.Enemies.scale ? G.Enemies.scale(bossDef) : {'hp':1,'spd':1,'dmg':1};
-                // 用 boss 定義構造（isBoss=true）
-                var enemy = new G.Enemy(bossDef, p.x + 50, p.y, scale, true);
-                if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
-                    G.EnemyMgr.add(enemy);
-                    alert('boss 召喚: ' + (bossDef.name || bossDef.dex || JSON.stringify(Object.keys(bossDef)).slice(0,50)));
-                } else {
-                    alert('Enemy 建構失敗');
-                }
-            } catch(e) { alert('err: ' + e.message); }
-        });
-        bossBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
-        body.appendChild(bossBtn);
-
         // === 加技能 ===
         var sep3b = document.createElement('div');
         sep3b.textContent = '✦ Add Move ✦';

@@ -350,13 +350,21 @@
                         // 加到 moves（已學列表）
                         if (!p.moves) p.moves = [];
                         p.moves.push(moveInstance);
-                        // 加到 slots（裝備中的技能，這個才是實際戰鬥用的）
+                        // 加到 slots（裝備中的技能）— 遊戲用陣列包 move
                         if (!p.slots) p.slots = [];
-                        p.slots.push(moveInstance);
+                        // 先檢查 maxMoves 限制
+                        if (p.maxMoves && p.slots.length >= p.maxMoves) {
+                            p.maxMoves = p.slots.length + 1;
+                        }
+                        p.slots.push([moveInstance]);
+                        // 呼叫 arrange() 讓遊戲重新排列 slots
+                        try { if (p.arrange) p.arrange(); } catch(e){}
+                        // 設定 active
+                        try { if (!p.active) p.active = p.slots.length - 1; } catch(e){}
                         // 觸發刷新
                         try { if (G.LevelUp && G.LevelUp.offer) G.LevelUp.offer(p); } catch(e){}
                         try { if (G.Game.everyone) G.Game.everyone(); } catch(e){}
-                        alert('pushed!\nmoves: ' + p.moves.length + '\nslots: ' + p.slots.length + '\nlast: ' + (p.slots[p.slots.length-1] && p.slots[p.slots.length-1].id));
+                        alert('pushed!\nmoves: ' + p.moves.length + '\nslots: ' + p.slots.length + '\nmaxMoves: ' + (p.maxMoves || '?') + '\nlast: ' + (p.slots[p.slots.length-1] && p.slots[p.slots.length-1][0] && p.slots[p.slots.length-1][0].id));
                     } else {
                         alert('instance returned null/undefined for: ' + moveId);
                     }

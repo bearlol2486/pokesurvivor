@@ -373,36 +373,30 @@
             var G = window.GAME;
             if (!G || !G.Game || !G.Game.player) { alert('no player'); return; }
             var p = G.Game.player;
+            // 暫時關掉 Kill Aura 防止殺 boss
+            var wasKillAura = window._mp_killaura;
+            window._mp_killaura = false;
             try {
                 var dexNum = parseInt(bossSelect.value);
-                // 直接構造 def 物件 {dex: 數字}
-                var bossDef = {'dex': dexNum};
-                // 先 preload sprite
+                var bossDef = {'dex': dexNum, 'hp': 99999};
                 if (G.Sprites && G.Sprites.preload) {
                     try { G.Sprites.preload([dexNum]); } catch(e){}
                 }
-                // scale 物件 — 用大 HP 防止立刻死亡
-                var scale = {'hp':10,'spd':1,'dmg':1};
-                // 構造 boss（isBoss=true）— 召喚在玩家旁邊（小距離，防超出地圖）
+                var scale = {'hp':100,'spd':1,'dmg':1};
                 var enemy = new G.Enemy(bossDef, p.x + 5, p.y + 5, scale, true);
+                alert('step1: enemy created\nhp:' + enemy.hp + '\nmaxHp:' + enemy.maxHp);
                 if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
-                    // 強制設大 HP（不管 maxHp 是多少）
                     try {
                         enemy.maxHp = 99999;
                         enemy.hp = 99999;
-                        // 也設 def 裡的 hp（遊戲可能讀 def.hp）
-                        if (enemy.def) {
-                            enemy.def.hp = 99999;
-                        }
-                        bossDef.hp = 99999;
                     } catch(e){}
                     G.EnemyMgr.add(enemy);
                     window._mp_bossprotect = enemy;
-                    alert('boss: ' + (enemy.name || '?') + '\nhp: ' + enemy.hp + '\nmaxHp: ' + enemy.maxHp);
-                } else {
-                    alert('Enemy 建構失敗');
+                    alert('step2: added to EnemyMgr\nhp: ' + enemy.hp + '\nmaxHp: ' + enemy.maxHp);
                 }
             } catch(e) { alert('err: ' + e.message); }
+            // 恢復 Kill Aura 狀態
+            window._mp_killaura = wasKillAura;
         });
         bossBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
         body.appendChild(bossBtn);

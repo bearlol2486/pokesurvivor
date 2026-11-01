@@ -87,7 +87,21 @@
         closeBtn.textContent = '✕';
         closeBtn.style.cssText = 'position:absolute;top:8px;right:8px;width:22px;height:22px;background:rgba(200,100,100,0.15);color:#c0392b;border:1px solid #c0392b;border-radius:50%;cursor:pointer;font-size:11px;font-weight:bold;';
         sg.appendChild(closeBtn);
-        closeBtn.onclick = function(){ sg.style.display = 'none'; };
+        // 收起 panel + 顯示浮動小按鈕
+        closeBtn.onclick = function(){
+            sg.style.display = 'none';
+            if (!document.getElementById('_ps_modpill')) {
+                var pill = document.createElement('button');
+                pill.id = '_ps_modpill';
+                pill.textContent = '✦';
+                pill.style.cssText = 'position:fixed;top:80px;left:10px;z-index:99999;width:40px;height:40px;background:linear-gradient(135deg,#fff8eb,#f5e6d2);color:#8b5a2b;border:2px solid #d4a574;border-radius:50%;cursor:pointer;font-size:18px;box-shadow:0 2px 10px rgba(139,90,43,0.4);';
+                document.body.appendChild(pill);
+                pill.onclick = function(){
+                    sg.style.display = '';
+                    pill.remove();
+                };
+            }
+        };
 
         // 縮小按鈕
         var minBtn = document.createElement('button');

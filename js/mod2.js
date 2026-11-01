@@ -185,6 +185,7 @@
         _inputRow('Set XP', 'xp', function(p, v){ p.xp = v; });
         _inputRow('Set Magnet', 'magnet', function(p, v){ p.magnet = v; });
         _inputRow('Set CDMul', '0-1', function(p, v){ p.cdMul = v; });
+        _inputRow('Set Rerolls', 'rerolls', function(p, v){ p.rerolls = v; });
 
         _toggle('God Mode', 'godmode', 'ON', 'OFF', '#00b450', '#3c3c41');
         _toggle('Kill Aura', 'killaura', 'ON', 'OFF', '#b41818', '#3c3c41');
@@ -193,6 +194,7 @@
         _toggle('XP Boost', 'xpboost', 'ON', 'OFF', '#00ff88', '#3c3c41');
         _toggle('Magnet Lock', 'magnetlock', 'ON', 'OFF', '#ff9ed8', '#3c3c41');
         _toggle('No Cooldown', 'nocd', 'ON', 'OFF', '#ffaa00', '#3c3c41');
+        _toggle('Inf Reroll', 'infre', 'ON', 'OFF', '#9d6bff', '#3c3c41');
 
         // === Save / Money / Tickets 區塊 ===
         var sep1 = document.createElement('div');
@@ -299,6 +301,7 @@
             if (window._mp_xpboost) { try { p.xp = (p.xpNext || 100) + 100; } catch(e){} }
             if (window._mp_magnetlock) { try { p.magnet = 999; p.magnetMul = 99; } catch(e){} }
             if (window._mp_nocd) { try { p.cdMul = 0.01; } catch(e){} }
+            if (window._mp_infre) { try { p.rerolls = 0; p.rerollBonus = 99; } catch(e){} }
             // Kill Aura: set all enemies hp to 0 and mark dead
             if (window._mp_killaura) {
                 try {

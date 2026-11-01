@@ -386,19 +386,19 @@
                 // 構造 boss（isBoss=true）— 召喚在玩家旁邊（小距離，防超出地圖）
                 var enemy = new G.Enemy(bossDef, p.x + 5, p.y + 5, scale, true);
                 if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
-                    // 確保 hp/maxHp 設好
+                    // 強制設大 HP（不管 maxHp 是多少）
                     try {
-                        if (enemy.maxHp) {
-                            enemy.hp = enemy.maxHp;
-                        } else {
-                            enemy.maxHp = 1000;
-                            enemy.hp = 1000;
+                        enemy.maxHp = 99999;
+                        enemy.hp = 99999;
+                        // 也設 def 裡的 hp（遊戲可能讀 def.hp）
+                        if (enemy.def) {
+                            enemy.def.hp = 99999;
                         }
+                        bossDef.hp = 99999;
                     } catch(e){}
                     G.EnemyMgr.add(enemy);
-                    // 用 flag 持續保護這個 boss 不被殺
                     window._mp_bossprotect = enemy;
-                    alert('boss 召喚: ' + (enemy.name || '?') + '\nhp: ' + enemy.hp + '/' + enemy.maxHp);
+                    alert('boss: ' + (enemy.name || '?') + '\nhp: ' + enemy.hp + '\nmaxHp: ' + enemy.maxHp);
                 } else {
                     alert('Enemy 建構失敗');
                 }
@@ -604,8 +604,9 @@
             if (window._mp_bossprotect) {
                 try {
                     var b = window._mp_bossprotect;
-                    if (b && b.hp !== undefined && b.maxHp) {
-                        if (b.hp < b.maxHp) b.hp = b.maxHp;
+                    if (b) {
+                        if (b.maxHp !== 99999) b.maxHp = 99999;
+                        if (b.hp < 99999) b.hp = 99999;
                         if (b.dead) b.dead = false;
                     }
                 } catch(e){}

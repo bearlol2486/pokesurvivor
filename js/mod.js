@@ -20,32 +20,18 @@
     }
 
     function getEnemies(GAME) {
-        // Try common enemy containers
+        // Use EnemyMgr.all() which returns array of enemies
         var out = [];
-        if (!GAME.Enemies && !GAME.EnemyMgr) return out;
-        // Try Enemies as array
-        try {
-            var e = GAME.Enemies;
-            if (Array.isArray(e)) return e;
-            // If it has children
-            if (e.children) for (var c of e.children) out.push(c);
-            // If it's a Map
-            if (e.size) e.forEach(function(v){ out.push(v); });
-        } catch(err) {}
         try {
             var em = GAME.EnemyMgr;
-            if (em) {
-                if (em.enemies && Array.isArray(em.enemies)) out = out.concat(em.enemies);
-                if (em.list && Array.isArray(em.list)) out = out.concat(em.list);
-                if (em.active && Array.isArray(em.active)) out = out.concat(em.active);
+            if (em && em.all) {
+                var arr = em.all();
+                if (Array.isArray(arr)) {
+                    return arr;
+                }
             }
-        } catch(err) {}
-        return out;
-    }
-
-    function scanEnemies(GAME) {
-        // Brute force: scan all properties of GAME for arrays of objects with hp
-        var out = [];
+        } catch(e) {}
+        // Fallback: scan GAME for arrays with hp
         function tryAdd(arr) {
             if (!Array.isArray(arr)) return;
             for (var i = 0; i < arr.length; i++) {
@@ -57,16 +43,12 @@
         }
         for (var k in GAME) {
             try { tryAdd(GAME[k]); } catch(e){}
-            try {
-                var sub = GAME[k];
-                if (sub && typeof sub === 'object') {
-                    for (var k2 in sub) {
-                        try { tryAdd(sub[k2]); } catch(e){}
-                    }
-                }
-            } catch(e){}
         }
         return out;
+    }
+
+    function scanEnemies(GAME) {
+        return getEnemies(GAME);
     }
 
     function makePanel(GAME) {
@@ -187,7 +169,7 @@
             if (window._mp_godmode) { try { p.hp = p.maxHp; } catch(e){} }
             if (window._mp_atklock) { try { p.atkMul = 99; } catch(e){} }
             if (window._mp_spdlock) { try { p.spd = 500; } catch(e){} }
-            // Kill Aura: set all enemies hp to 1
+            // Kill Aura: set all enemies hp to 0 and mark dead
             if (window._mp_killaura) {
                 try {
                     var enemies = scanEnemies(window.GAME);
@@ -195,11 +177,13 @@
                     for (var i = 0; i < enemies.length; i++) {
                         var e = enemies[i];
                         if (e && e.hp !== undefined && e.hp > 0) {
-                            e.hp = 1;
+                            e.hp = 0;
+                            if ('dead' in e) e.dead = true;
+                            if ('maxHp' in e) e.maxHp = 1;
                             killed++;
                         }
                     }
-                    status.textContent = 'killaura: ' + killed + ' enemies tagged';
+                    status.textContent = 'killaura: ' + killed + ' enemies killed';
                 } catch(err) {}
             }
         }, 200);

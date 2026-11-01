@@ -299,7 +299,7 @@
             if (window._mp_godmode) { try { p.hp = p.maxHp; } catch(e){} }
             if (window._mp_atklock) { try { p.atkMul = 99; } catch(e){} }
             if (window._mp_spdlock) { try { p.spd = 500; p.speed = 500; p.baseSpd = 500; } catch(e){} }
-            if (window._mp_xpboost) { try { p.xp = (p.xpNext || 100) - 1; } catch(e){} }
+            if (window._mp_xpboost) { try { p.xp = (p.xpNext || 100) + 100; } catch(e){} }
             // Kill Aura: set all enemies hp to 0 and mark dead
             if (window._mp_killaura) {
                 try {

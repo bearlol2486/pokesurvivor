@@ -347,11 +347,16 @@
                     alert('instance result: ' + (moveInstance ? Object.keys(moveInstance).join(',') : 'null'));
                     if (moveInstance) {
                         try { moveInstance.since = G.Game.st ? G.Game.st.time : 0; } catch(e){}
+                        // 加到 moves（已學列表）
+                        if (!p.moves) p.moves = [];
                         p.moves.push(moveInstance);
-                        // 嘗試觸發技能 UI 刷新
+                        // 加到 slots（裝備中的技能，這個才是實際戰鬥用的）
+                        if (!p.slots) p.slots = [];
+                        p.slots.push(moveInstance);
+                        // 觸發刷新
                         try { if (G.LevelUp && G.LevelUp.offer) G.LevelUp.offer(p); } catch(e){}
                         try { if (G.Game.everyone) G.Game.everyone(); } catch(e){}
-                        alert('pushed! moves now: ' + p.moves.length + '\nlast move id: ' + (p.moves[p.moves.length-1] && p.moves[p.moves.length-1].id));
+                        alert('pushed!\nmoves: ' + p.moves.length + '\nslots: ' + p.slots.length + '\nlast: ' + (p.slots[p.slots.length-1] && p.slots[p.slots.length-1].id));
                     } else {
                         alert('instance returned null/undefined for: ' + moveId);
                     }

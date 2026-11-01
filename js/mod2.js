@@ -405,12 +405,24 @@
                         if (p.bodyH) p.bodyH.x = arena.x, p.bodyH.y = arena.y;
                         alert('傳送到裂縫: ' + arena.x + ',' + arena.y);
                     } else {
-                        // 找最近敵人傳送
+                        // 找最遠的敵人傳送（裂縫 boss 通常在最遠處）
                         var enemies = G.EnemyMgr && G.EnemyMgr.all ? G.EnemyMgr.all() : [];
                         if (enemies.length > 0 && p) {
-                            p.x = enemies[0].x;
-                            p.y = enemies[0].y;
-                            alert(info + '\n傳送到最近敵人: ' + enemies[0].x + ',' + enemies[0].y);
+                            // 找離玩家最遠的敵人
+                            var farthest = enemies[0];
+                            var maxDist = 0;
+                            for (var ei = 0; ei < enemies.length; ei++) {
+                                var e = enemies[ei];
+                                if (e && e.x !== undefined && e.y !== undefined) {
+                                    var dx = e.x - p.x;
+                                    var dy = e.y - p.y;
+                                    var d = dx*dx + dy*dy;
+                                    if (d > maxDist) { maxDist = d; farthest = e; }
+                                }
+                            }
+                            p.x = farthest.x;
+                            p.y = farthest.y;
+                            alert(info + '\n傳送到最遠敵人: ' + Math.floor(farthest.x) + ',' + Math.floor(farthest.y));
                         } else {
                             alert(info + '\n找不到裂縫位置');
                         }

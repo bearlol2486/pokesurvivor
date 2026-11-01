@@ -384,11 +384,20 @@
 
         var riftBtn = _btn('召喚裂縫', '#8e44ad', function(){
             var G = window.GAME;
-            if (!G || !G.Game || !G.Game.st) { alert('no game state'); return; }
+            if (!G || !G.Game) { alert('no game'); return; }
             try {
-                // 0x834 = 2100 秒，遊戲時間到 2100 會自動觸發裂縫
-                G.Game.st.time = 2100;
-                alert('time set to 2100\n裂縫應該馬上出現');
+                // 方法1: 設時間到 2100 秒（觸發 break event）
+                if (G.Game.st) G.Game.st.time = 2100;
+                // 方法2: 直接呼叫 Rift.onEvent
+                if (G.Rift && G.Rift.onEvent) {
+                    G.Rift.onEvent(['rift', 'rift', 1]);
+                }
+                // 方法3: 觸發 break 事件（如果有事件系統）
+                try {
+                    var ev = new Event('rift');
+                    window.dispatchEvent(ev);
+                } catch(e){}
+                alert('rift triggered\n時間設為 2100\nRift.onEvent 已呼叫');
             } catch(e) { alert('err: ' + e.message); }
         });
         riftBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#8e44ad;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';

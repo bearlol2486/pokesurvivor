@@ -310,23 +310,11 @@
                 var G = window.GAME;
                 if (!G || !G.Game || !G.Game.st) { alert('no game state'); return; }
                 try {
-                    var st = G.Game.st;
-                    // 直接設 time
-                    st.time = seconds;
-                    // 也嘗試用 defineProperty 強制覆蓋 getter
-                    try {
-                        var origDesc = Object.getOwnPropertyDescriptor(st, 'time');
-                        Object.defineProperty(st, 'time', {
-                            value: seconds,
-                            writable: true,
-                            configurable: true,
-                            enumerable: true
-                        });
-                    } catch(e){}
-                    // 設一個 flag 讓 refresh loop 持續鎖定時間
-                    window._mp_jumptime = seconds;
-                    window._mp_jumptarget = seconds;
-                    alert('time set to ' + seconds + 's (' + Math.floor(seconds/60) + ' min)\nrefresh loop 會持續鎖定');
+                    // 只設一次，不持續鎖定
+                    G.Game.st.time = seconds;
+                    // 清除時間鎖定 flag
+                    window._mp_jumptime = null;
+                    alert('time set to ' + seconds + 's (' + Math.floor(seconds/60) + ' min)\n時間會繼續跑');
                 } catch(e) { alert('err: ' + e.message); }
             });
             r.appendChild(b);

@@ -348,6 +348,9 @@
                     if (moveInstance) {
                         try { moveInstance.since = G.Game.st ? G.Game.st.time : 0; } catch(e){}
                         p.moves.push(moveInstance);
+                        // 嘗試觸發技能 UI 刷新
+                        try { if (G.LevelUp && G.LevelUp.offer) G.LevelUp.offer(p); } catch(e){}
+                        try { if (G.Game.everyone) G.Game.everyone(); } catch(e){}
                         alert('pushed! moves now: ' + p.moves.length + '\nlast move id: ' + (p.moves[p.moves.length-1] && p.moves[p.moves.length-1].id));
                     } else {
                         alert('instance returned null/undefined for: ' + moveId);

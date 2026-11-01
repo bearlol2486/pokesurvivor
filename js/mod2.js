@@ -342,6 +342,56 @@
         _timeBtn('30 分鐘', 1800);
         _timeBtn('34 分鐘', 2040);
 
+        // === 召喚首領 ===
+        var sepBoss = document.createElement('div');
+        sepBoss.textContent = '✦ Boss ✦';
+        sepBoss.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
+        body.appendChild(sepBoss);
+
+        // boss 選單
+        var bossRow = document.createElement('div');
+        bossRow.style.cssText = 'padding:6px 2px;';
+        var bossSelect = document.createElement('select');
+        bossSelect.style.cssText = 'width:100%;background:rgba(255,255,255,0.8);color:#5a3e2b;border:1px solid #d4a574;border-radius:6px;padding:4px;font-size:11px;font-family:inherit;';
+        var bossList = [
+            [3, 'Venusaur 妙蛙花'], [6, 'Charizard 噴火龍'], [9, 'Blastoise 水箭龜'],
+            [65, 'Alakazam 胡地'], [68, 'Machamp 怪力'], [76, 'Golem 隆隆岩'],
+            [94, 'Gengar 耿鬼'], [130, 'Gyarados 暴鯉龍'], [131, 'Lapras 拉普拉斯'],
+            [143, 'Snorlax 卡比獸'], [149, 'Dragonite 快龍'], [150, 'Mewtwo 超夢'],
+            [151, 'Mew 夢幻'], [144, 'Articuno 急凍鳥'], [145, 'Zapdos 閃電鳥'], [146, 'Moltres 火焰鳥']
+        ];
+        for (var bi = 0; bi < bossList.length; bi++) {
+            var opt = document.createElement('option');
+            opt.value = bossList[bi][0];
+            opt.textContent = bossList[bi][1];
+            bossSelect.appendChild(opt);
+        }
+        bossRow.appendChild(bossSelect);
+        body.appendChild(bossRow);
+
+        var bossBtn = _btn('召喚首領', '#c0392b', function(){
+            var G = window.GAME;
+            if (!G || !G.Game || !G.Game.player) { alert('no player'); return; }
+            var p = G.Game.player;
+            try {
+                var dexNum = parseInt(bossSelect.value);
+                // 直接構造 def 物件 {dex: 數字}
+                var bossDef = {'dex': dexNum};
+                // scale 物件
+                var scale = {'hp':1,'spd':1,'dmg':1};
+                // 構造 boss（isBoss=true）
+                var enemy = new G.Enemy(bossDef, p.x + 50, p.y, scale, true);
+                if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
+                    G.EnemyMgr.add(enemy);
+                    alert('boss 召喚: dex #' + dexNum + '\nname: ' + (enemy.name || '?'));
+                } else {
+                    alert('Enemy 建構失敗');
+                }
+            } catch(e) { alert('err: ' + e.message); }
+        });
+        bossBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
+        body.appendChild(bossBtn);
+
         // === 加技能 ===
         var sep3b = document.createElement('div');
         sep3b.textContent = '✦ Add Move ✦';

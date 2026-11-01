@@ -385,7 +385,8 @@
                     try { G.Sprites.preload([dexNum]); } catch(e){}
                 }
                 var scale = {'hp':100,'spd':1,'dmg':1};
-                var enemy = new G.Enemy(bossDef, p.x + 5, p.y + 5, scale, true);
+                // 召喚在玩家正上方一點點
+                var enemy = new G.Enemy(bossDef, p.x, p.y - 2, scale, true);
                 alert('step1: enemy created\nhp:' + enemy.hp + '\nmaxHp:' + enemy.maxHp);
                 if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
                     try {
@@ -608,6 +609,12 @@
                         b.maxHp = 99999;
                         b.hp = 99999;
                         b.dead = false;
+                        // 鎖定 boss 位置在玩家附近（防止跑遠）
+                        var pp = window.GAME.Game.player;
+                        if (pp && b.x !== undefined) {
+                            b.x = pp.x + 20;
+                            b.y = pp.y;
+                        }
                         // 檢查 boss 還在不在 EnemyMgr
                         var G = window.GAME;
                         if (G && G.EnemyMgr && G.EnemyMgr.all) {

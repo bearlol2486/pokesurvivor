@@ -4,7 +4,8 @@
 // One-Hit: set all enemies hp to 1 each tick
 // Defense: hook player.hurt to no-op (god mode already does this via hp=maxHp)
 (function(){
-    if (window._mp_loaded) { var old = document.getElementById('_ps_modpanel'); if (old) old.remove(); }
+    // 允許重複注入：每次都清舊 panel 重建
+    window._mp_loaded = true;
 
     function findGameObject() {
         for (var k in window) {
@@ -51,9 +52,12 @@
     }
 
     function makePanel(GAME) {
-        // Remove any existing panel first (handles bfcache restore case)
-        var old = document.getElementById('_ps_modpanel');
-        if (old) old.remove();
+        // 強制移除所有舊 panel（不管什麼版本）
+        var allOld = document.querySelectorAll('[id^="_ps_modpanel"], [id^="_mp_"]');
+        allOld.forEach(function(el){ el.remove(); });
+        // 也清除任何全域 panel 變數
+        try { delete window._mp_loaded; } catch(e){}
+        window._mp_loaded = true;
         var sg = document.createElement('div');
         sg.id = '_ps_modpanel';
         sg.style.cssText = 'position:fixed;top:80px;left:10px;z-index:99999;width:240px;background:#0e0f13;border:1px solid #00a2ff;border-radius:8px;font-family:monospace;color:#eee;font-size:12px;padding:8px;user-select:none;';
@@ -69,6 +73,28 @@
         closeBtn.style.cssText = 'position:absolute;top:6px;right:6px;width:20px;height:20px;background:#281419;color:#ff6464;border:none;border-radius:3px;cursor:pointer;font-size:11px;';
         sg.appendChild(closeBtn);
         closeBtn.onclick = function(){ sg.style.display = 'none'; };
+
+        // 縮小按鈕
+        var minBtn = document.createElement('button');
+        minBtn.textContent = '—';
+        minBtn.style.cssText = 'position:absolute;top:6px;right:30px;width:20px;height:20px;background:#1a2a1e;color:#6464ff;border:none;border-radius:3px;cursor:pointer;font-size:11px;';
+        sg.appendChild(minBtn);
+        var minimized = false;
+        var bodyHeight = 'auto';
+        minBtn.onclick = function(){
+            minimized = !minimized;
+            if (minimized) {
+                body.style.display = 'none';
+                sg.style.height = '32px';
+                sg.style.overflow = 'hidden';
+                minBtn.textContent = '+';
+            } else {
+                body.style.display = '';
+                sg.style.height = 'auto';
+                sg.style.overflow = '';
+                minBtn.textContent = '—';
+            }
+        };
 
         var body = document.createElement('div');
         sg.appendChild(body);
@@ -180,8 +206,10 @@
                 try {
                     setFn(G.DB.save, v);
                     saveInfo.textContent = 'set ok';
-                    // 嘗試立刻同步到雲端
-                    if (G.DB.saveNow) {
+                    // 用 commit 同步到雲端（saveNow 可能被 rules 擋）
+                    if (G.DB.commit) {
+                        try { G.DB.commit(); saveInfo.textContent = 'set + committed'; } catch(e){ saveInfo.textContent = 'set ok, commit err: ' + e.message; }
+                    } else if (G.DB.saveNow) {
                         try { G.DB.saveNow(); } catch(e){}
                     }
                 } catch(e) { saveInfo.textContent = 'err: ' + e.message; }
@@ -206,7 +234,8 @@
                 s.tickets.t10 = 999;
                 s.candy = 9999;
                 saveInfo.textContent = 'MAX done';
-                if (G.DB.saveNow) try { G.DB.saveNow(); } catch(e){}
+                if (G.DB.commit) try { G.DB.commit(); saveInfo.textContent = 'MAX done + committed'; } catch(e){}
+                else if (G.DB.saveNow) try { G.DB.saveNow(); } catch(e){}
             } catch(e) { saveInfo.textContent = 'err: ' + e.message; }
         });
         maxBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#b41818;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:10px;';

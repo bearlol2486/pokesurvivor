@@ -52,24 +52,17 @@
     }
 
     function makePanel(GAME) {
-        // 強制移除所有舊 panel — 用多種 selector 確保抓到
-        var selectors = [
-            '#_ps_modpanel',
-            '#_mp_panel',
-            '[id^="_ps_modpanel"]',
-            '[id^="_mp_"]',
-            'div[style*="z-index:99999"]',
-            'div[style*="z-index: 99999"]'
-        ];
-        selectors.forEach(function(sel){
+        // 強制移除所有舊 panel — 抓所有 fixed + z-index:99999 的 div
+        // （舊版 app.min.js 注入的 panel 沒有 id，只能靠 style 抓）
+        var allDivs = document.querySelectorAll('div');
+        allDivs.forEach(function(el){
             try {
-                var els = document.querySelectorAll(sel);
-                els.forEach(function(el){
-                    // 只移除浮動面板，不動其他元素
-                    if (el && el.style && el.style.position === 'fixed' && el.style.zIndex === '99999') {
+                if (el.style && el.style.position === 'fixed' && (el.style.zIndex === '99999' || el.style.zIndex === 99999)) {
+                    // 確認是 panel（有 Mod Panel 文字 或 _mp 標記）
+                    if (el.textContent && el.textContent.indexOf('Mod Panel') !== -1) {
                         el.remove();
                     }
-                });
+                }
             } catch(e) {}
         });
         window._mp_loaded = true;

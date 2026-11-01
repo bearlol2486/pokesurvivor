@@ -97,16 +97,24 @@
         // 收起 panel + 顯示浮動小按鈕
         closeBtn.onclick = function(){
             sg.style.display = 'none';
-            if (!document.getElementById('_ps_modpill')) {
-                var pill = document.createElement('button');
+            setTimeout(function(){
+                if (document.getElementById('_ps_modpill')) return;
+                var pill = document.createElement('div');
                 pill.id = '_ps_modpill';
-                pill.style.cssText = 'position:fixed;top:80px;left:10px;z-index:2147483647;width:48px;height:48px;background-image:url(assets/panel-bg2.jpg);background-size:cover;background-position:center;border:2px solid #d4a574;border-radius:50%;cursor:pointer;box-shadow:0 2px 12px rgba(139,90,43,0.5);padding:0;overflow:hidden;';
-                document.body.appendChild(pill);
+                pill.style.cssText = 'position:fixed;top:80px;left:10px;z-index:2147483647;width:52px;height:52px;background-image:url(assets/panel-bg2.jpg);background-size:cover;background-position:center top;border:3px solid #d4a574;border-radius:50%;cursor:pointer;box-shadow:0 4px 16px rgba(139,90,43,0.6);padding:0;overflow:hidden;';
+                // 加到 documentElement 確保最上層
+                (document.body || document.documentElement).appendChild(pill);
                 pill.onclick = function(){
                     sg.style.display = '';
                     pill.remove();
                 };
-            }
+                // 也加 touch 事件（iPad Safari 有時 click 不靈）
+                pill.ontouchend = function(e){
+                    e.preventDefault();
+                    sg.style.display = '';
+                    pill.remove();
+                };
+            }, 50);
         };
 
         // 縮小按鈕
@@ -119,7 +127,7 @@
             minimized = !minimized;
             if (minimized) {
                 body.style.display = 'none';
-                sg.style.width = 'auto';
+                sg.style.width = '260px';
                 sg.style.padding = '6px 10px';
                 title.style.paddingRight = '60px';
                 minBtn.textContent = '+';

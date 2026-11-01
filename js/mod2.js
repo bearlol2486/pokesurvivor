@@ -336,39 +336,31 @@
         var addMoveBtn = _btn('加入技能', '#27ae60', function(){
             var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
             if (!p) { alert('no player - start a run first'); return; }
-            if (!p.moves) { alert('player has no moves array'); return; }
             var moveId = moveSelect.value;
-            var beforeCount = p.moves.length;
             try {
                 var G = window.GAME;
-                alert('GAME.Moves: ' + (typeof G.Moves) + '\nMoves.instance: ' + (typeof (G.Moves && G.Moves.instance)));
                 if (G.Moves && G.Moves.instance) {
                     var moveInstance = G.Moves.instance(moveId, 1);
-                    alert('instance result: ' + (moveInstance ? Object.keys(moveInstance).join(',') : 'null'));
                     if (moveInstance) {
                         try { moveInstance.since = G.Game.st ? G.Game.st.time : 0; } catch(e){}
-                        // 加到 moves（已學列表）
+                        // 直接覆蓋第一個 slot（確保能用）
+                        if (!p.slots) p.slots = [];
+                        if (p.slots.length === 0) {
+                            p.slots.push([moveInstance]);
+                        } else {
+                            // 覆蓋第一個 slot
+                            p.slots[0] = [moveInstance];
+                        }
+                        // 也加到 moves
                         if (!p.moves) p.moves = [];
                         p.moves.push(moveInstance);
-                        // 加到 slots（裝備中的技能）— 遊戲用陣列包 move
-                        if (!p.slots) p.slots = [];
-                        // 先檢查 maxMoves 限制
-                        if (p.maxMoves && p.slots.length >= p.maxMoves) {
-                            p.maxMoves = p.slots.length + 1;
-                        }
-                        p.slots.push([moveInstance]);
-                        // 不呼叫 arrange()（可能出錯回滾）
-                        // 設定 active
-                        try { if (!p.active) p.active = p.slots.length - 1; } catch(e){}
-                        // 觸發刷新
-                        try { if (G.LevelUp && G.LevelUp.offer) G.LevelUp.offer(p); } catch(e){}
-                        try { if (G.Game.everyone) G.Game.everyone(); } catch(e){}
-                        alert('pushed!\nmoves: ' + p.moves.length + '\nslots: ' + p.slots.length + '\nmaxMoves: ' + (p.maxMoves || '?') + '\nlast: ' + (p.slots[p.slots.length-1] && p.slots[p.slots.length-1][0] && p.slots[p.slots.length-1][0].id));
+                        try { if (!p.active) p.active = 0; } catch(e){}
+                        alert('set slot[0] = ' + moveId + '\nslots: ' + p.slots.length + '\nslot[0] move: ' + (p.slots[0] && p.slots[0][0] && p.slots[0][0].id));
                     } else {
-                        alert('instance returned null/undefined for: ' + moveId);
+                        alert('instance returned null for: ' + moveId);
                     }
                 }
-            } catch(e) { alert('error: ' + e.message + '\nstack: ' + e.stack); }
+            } catch(e) { alert('error: ' + e.message); }
         });
         addMoveBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#27ae60;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
         body.appendChild(addMoveBtn);

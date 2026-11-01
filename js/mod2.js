@@ -377,13 +377,17 @@
                 var dexNum = parseInt(bossSelect.value);
                 // 直接構造 def 物件 {dex: 數字}
                 var bossDef = {'dex': dexNum};
+                // 先 preload sprite
+                if (G.Sprites && G.Sprites.preload) {
+                    try { G.Sprites.preload([dexNum]); } catch(e){}
+                }
                 // scale 物件
                 var scale = {'hp':1,'spd':1,'dmg':1};
                 // 構造 boss（isBoss=true）
                 var enemy = new G.Enemy(bossDef, p.x + 50, p.y, scale, true);
                 if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
                     G.EnemyMgr.add(enemy);
-                    alert('boss 召喚: dex #' + dexNum + '\nname: ' + (enemy.name || '?'));
+                    alert('boss 召喚: dex #' + dexNum + '\nname: ' + (enemy.name || '?') + '\nx:' + Math.floor(enemy.x) + ' y:' + Math.floor(enemy.y));
                 } else {
                     alert('Enemy 建構失敗');
                 }

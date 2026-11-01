@@ -600,14 +600,27 @@
                     window.GAME.Game.st.time = window._mp_jumptime;
                 } catch(e){}
             }
-            // 保護 boss HP 不被殺
+            // 保護 boss HP 不被殺 + 重新加入如果被移除
             if (window._mp_bossprotect) {
                 try {
                     var b = window._mp_bossprotect;
                     if (b) {
-                        if (b.maxHp !== 99999) b.maxHp = 99999;
-                        if (b.hp < 99999) b.hp = 99999;
-                        if (b.dead) b.dead = false;
+                        b.maxHp = 99999;
+                        b.hp = 99999;
+                        b.dead = false;
+                        // 檢查 boss 還在不在 EnemyMgr
+                        var G = window.GAME;
+                        if (G && G.EnemyMgr && G.EnemyMgr.all) {
+                            var all = G.EnemyMgr.all();
+                            var found = false;
+                            for (var ei = 0; ei < all.length; ei++) {
+                                if (all[ei] === b) { found = true; break; }
+                            }
+                            if (!found) {
+                                // boss 被移除了，重新加回
+                                G.EnemyMgr.add(b);
+                            }
+                        }
                     }
                 } catch(e){}
             }

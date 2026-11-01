@@ -75,24 +75,24 @@
         window._mp_loaded = true;
         var sg = document.createElement('div');
         sg.id = '_ps_modpanel';
-        sg.style.cssText = 'position:fixed;top:80px;left:10px;z-index:99999;width:240px;background:#0e0f13;border:1px solid #00a2ff;border-radius:8px;font-family:monospace;color:#eee;font-size:12px;padding:8px;user-select:none;';
+        sg.style.cssText = 'position:fixed;top:80px;left:10px;z-index:99999;width:260px;background:linear-gradient(135deg,rgba(255,248,235,0.96),rgba(245,230,210,0.96));border:2px solid #d4a574;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#5a3e2b;font-size:12px;padding:10px;box-shadow:0 4px 20px rgba(139,90,43,0.3);user-select:none;backdrop-filter:blur(8px);';
         document.body.appendChild(sg);
 
         var title = document.createElement('div');
-        title.textContent = 'Mod Panel v3';
-        title.style.cssText = 'color:#00a2ff;font-weight:bold;padding:4px 0 8px;cursor:move;';
+        title.textContent = '✦ Mod Panel ✦';
+        title.style.cssText = 'color:#8b5a2b;font-weight:700;padding:6px 0 10px;cursor:move;font-size:14px;text-align:center;border-bottom:1px solid #d4a574;margin-bottom:4px;letter-spacing:1px;';
         sg.appendChild(title);
 
         var closeBtn = document.createElement('button');
-        closeBtn.textContent = 'X';
-        closeBtn.style.cssText = 'position:absolute;top:6px;right:6px;width:20px;height:20px;background:#281419;color:#ff6464;border:none;border-radius:3px;cursor:pointer;font-size:11px;';
+        closeBtn.textContent = '✕';
+        closeBtn.style.cssText = 'position:absolute;top:8px;right:8px;width:22px;height:22px;background:rgba(200,100,100,0.15);color:#c0392b;border:1px solid #c0392b;border-radius:50%;cursor:pointer;font-size:11px;font-weight:bold;';
         sg.appendChild(closeBtn);
         closeBtn.onclick = function(){ sg.style.display = 'none'; };
 
         // 縮小按鈕
         var minBtn = document.createElement('button');
         minBtn.textContent = '—';
-        minBtn.style.cssText = 'position:absolute;top:6px;right:30px;width:20px;height:20px;background:#1a2a1e;color:#6464ff;border:none;border-radius:3px;cursor:pointer;font-size:11px;';
+        minBtn.style.cssText = 'position:absolute;top:8px;right:36px;width:22px;height:22px;background:rgba(139,90,43,0.15);color:#8b5a2b;border:1px solid #8b5a2b;border-radius:50%;cursor:pointer;font-size:11px;font-weight:bold;';
         sg.appendChild(minBtn);
         var minimized = false;
         var bodyHeight = 'auto';
@@ -115,12 +115,17 @@
         body.style.cssText = 'max-height:60vh;overflow-y:auto;overflow-x:hidden;';
         sg.appendChild(body);
 
+        // Custom scrollbar + warm theme styles
+        var styleEl = document.createElement('style');
+        styleEl.textContent = '#_ps_modpanel ::-webkit-scrollbar{width:6px}#_ps_modpanel ::-webkit-scrollbar-track{background:rgba(212,165,116,0.1);border-radius:3px}#_ps_modpanel ::-webkit-scrollbar-thumb{background:#d4a574;border-radius:3px}#_ps_modpanel input:focus{outline:none;border-color:#c0392b}';
+        document.head.appendChild(styleEl);
+
         function _row(labelText) {
             var r = document.createElement('div');
-            r.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid #1a1a1e;';
+            r.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:5px 2px;border-bottom:1px solid rgba(212,165,116,0.25);';
             var l = document.createElement('span');
             l.textContent = labelText;
-            l.style.color = '#ccc';
+            l.style.cssText = 'color:#6b4226;font-weight:500;font-size:11px;';
             r.appendChild(l);
             body.appendChild(r);
             return r;
@@ -129,8 +134,10 @@
         function _btn(text, color, fn) {
             var b = document.createElement('button');
             b.textContent = text;
-            b.style.cssText = 'background:' + (color || '#3c3c41') + ';color:#fff;border:none;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:10px;';
+            b.style.cssText = 'background:' + (color || '#d4a574') + ';color:#fff;border:none;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:10px;font-weight:600;transition:transform 0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.1);';
             b.onclick = fn;
+            b.onmouseenter = function(){ b.style.transform = 'scale(1.05)'; };
+            b.onmouseleave = function(){ b.style.transform = 'scale(1)'; };
             return b;
         }
 
@@ -138,12 +145,12 @@
             var r = _row(label);
             var val = document.createElement('span');
             val.textContent = '?';
-            val.style.color = '#00ff88';
+            val.style.cssText = 'color:#c0392b;font-weight:bold;font-size:11px;';
             r.insertBefore(val, r.lastChild);
-            var b = _btn('MAX', '#b41818', function(){
+            var b = _btn('MAX', '#c0392b', function(){
                 var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
                 if (!p) return;
-                try { setFn(p); val.textContent = 'SET'; } catch(e) { val.textContent = 'ERR'; }
+                try { setFn(p); val.textContent = '✓'; val.style.color = '#27ae60'; setTimeout(function(){ val.style.color = '#c0392b'; }, 1000); } catch(e) { val.textContent = '✗'; }
             });
             r.appendChild(b);
             return val;
@@ -156,10 +163,7 @@
                 window['_mp_' + stateKey] = newState;
                 b.textContent = newState ? onText : offText;
                 b.style.background = newState ? onColor : offColor;
-                // 關閉時執行還原函數
-                if (!newState && offFn) {
-                    try { offFn(); } catch(e) {}
-                }
+                if (!newState && offFn) { try { offFn(); } catch(e) {} }
             });
             r.appendChild(b);
         }
@@ -177,8 +181,8 @@
             var input = document.createElement('input');
             input.type = 'number';
             input.placeholder = placeholder;
-            input.style.cssText = 'width:80px;background:#1a1a1e;color:#fff;border:1px solid #2a2a2e;border-radius:3px;padding:2px 6px;font-family:monospace;font-size:11px;text-align:right;';
-            var b = _btn('SET', '#285078', function(){
+            input.style.cssText = 'width:70px;background:rgba(255,255,255,0.7);color:#5a3e2b;border:1px solid #d4a574;border-radius:6px;padding:3px 8px;font-size:11px;text-align:right;font-family:inherit;';
+            var b = _btn('SET', '#8b5a2b', function(){
                 var v = parseFloat(input.value);
                 if (isNaN(v)) return;
                 var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
@@ -199,36 +203,36 @@
         _inputRow('Set CDMul', '0-1', function(p, v){ p.cdMul = v; });
         _inputRow('Set Rerolls', 'rerolls', function(p, v){ p.rerolls = v; });
 
-        _toggle('God Mode', 'godmode', 'ON', 'OFF', '#00b450', '#3c3c41');
-        _toggle('Kill Aura', 'killaura', 'ON', 'OFF', '#b41818', '#3c3c41');
-        _toggle('ATK Lock', 'atklock', 'ON', 'OFF', '#b41818', '#3c3c41', function(){
+        _toggle('God Mode', 'godmode', 'ON', 'OFF', '#27ae60', '#d4a574');
+        _toggle('Kill Aura', 'killaura', 'ON', 'OFF', '#c0392b', '#d4a574');
+        _toggle('ATK Lock', 'atklock', 'ON', 'OFF', '#c0392b', '#d4a574', function(){
             var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
             if (p) try { p.atkMul = 1; } catch(e){}
         });
-        _toggle('SPD Lock', 'spdlock', 'ON', 'OFF', '#00a2ff', '#3c3c41', function(){
+        _toggle('SPD Lock', 'spdlock', 'ON', 'OFF', '#2980b9', '#d4a574', function(){
             var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
             if (p) try { p.spd = 1; p.speed = 1; p.baseSpd = 1; p.spdMul = 1; } catch(e){}
         });
-        _toggle('XP Boost', 'xpboost', 'ON', 'OFF', '#00ff88', '#3c3c41');
-        _toggle('Magnet Lock', 'magnetlock', 'ON', 'OFF', '#ff9ed8', '#3c3c41', function(){
+        _toggle('XP Boost', 'xpboost', 'ON', 'OFF', '#27ae60', '#d4a574');
+        _toggle('Magnet Lock', 'magnetlock', 'ON', 'OFF', '#e84393', '#d4a574', function(){
             var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
             if (p) try { p.magnet = 12; p.magnetMul = 1; } catch(e){}
         });
-        _toggle('No Cooldown', 'nocd', 'ON', 'OFF', '#ffaa00', '#3c3c41', function(){
+        _toggle('No Cooldown', 'nocd', 'ON', 'OFF', '#f39c12', '#d4a574', function(){
             var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
             if (p) try { p.cdMul = 1; } catch(e){}
         });
-        _toggle('Inf Reroll', 'infre', 'ON', 'OFF', '#9d6bff', '#3c3c41');
+        _toggle('Inf Reroll', 'infre', 'ON', 'OFF', '#8e44ad', '#d4a574');
 
         // === Save / Money / Tickets 區塊 ===
         var sep1 = document.createElement('div');
-        sep1.textContent = '─ Save / Money ─';
-        sep1.style.cssText = 'color:#888;padding:6px 0 2px;font-size:10px;border-top:1px solid #1a1a1e;margin-top:6px;';
+        sep1.textContent = '✦ Save / Money ✦';
+        sep1.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
         body.appendChild(sep1);
 
         // 顯示目前 save 值
         var saveInfo = document.createElement('div');
-        saveInfo.style.cssText = 'color:#888;font-size:10px;padding:2px 0;';
+        saveInfo.style.cssText = 'color:#6b4226;font-size:10px;padding:3px 2px;background:rgba(255,255,255,0.4);border-radius:4px;margin:2px 0;';
         body.appendChild(saveInfo);
 
         // 設定 coins
@@ -237,8 +241,8 @@
             var input = document.createElement('input');
             input.type = 'number';
             input.placeholder = placeholder;
-            input.style.cssText = 'width:80px;background:#1a1a1e;color:#fff;border:1px solid #2a2a2e;border-radius:3px;padding:2px 6px;font-family:monospace;font-size:11px;text-align:right;';
-            var b = _btn('SET', '#285078', function(){
+            input.style.cssText = 'width:70px;background:rgba(255,255,255,0.7);color:#5a3e2b;border:1px solid #d4a574;border-radius:6px;padding:3px 8px;font-size:11px;text-align:right;font-family:inherit;';
+            var b = _btn('SET', '#8b5a2b', function(){
                 var v = parseInt(input.value);
                 if (isNaN(v)) return;
                 var G = window.GAME;
@@ -278,12 +282,14 @@
                 else if (G.DB.saveNow) try { G.DB.saveNow(); } catch(e){}
             } catch(e) { saveInfo.textContent = 'err: ' + e.message; }
         });
-        maxBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#b41818;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:10px;';
+        maxBtn.style.cssText = 'width:100%;margin-top:6px;padding:8px;background:linear-gradient(135deg,#c0392b,#8b0000);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;transition:transform 0.15s;box-shadow:0 2px 6px rgba(192,57,43,0.3);';
+        maxBtn.onmouseenter = function(){ maxBtn.style.transform = 'scale(1.02)'; };
+        maxBtn.onmouseleave = function(){ maxBtn.style.transform = 'scale(1)'; };
         body.appendChild(maxBtn);
 
         var status = document.createElement('div');
         status.textContent = 'waiting...';
-        status.style.cssText = 'color:#888;padding:4px 0;font-size:10px;';
+        status.style.cssText = 'color:#8b5a2b;padding:6px 2px;font-size:10px;text-align:center;border-top:1px solid rgba(212,165,116,0.3);margin-top:4px;font-style:italic;';
         body.appendChild(status);
 
         var drag = false, ds = null, sp = null;

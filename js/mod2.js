@@ -343,19 +343,17 @@
                     var moveInstance = G.Moves.instance(moveId, 1);
                     if (moveInstance) {
                         try { moveInstance.since = G.Game.st ? G.Game.st.time : 0; } catch(e){}
-                        // 直接覆蓋第一個 slot（確保能用）
+                        // 擴大 maxMoves 限制
+                        if (!p.maxMoves || p.maxMoves < 10) p.maxMoves = 10;
+                        // 加到 slots（push 不覆蓋）
                         if (!p.slots) p.slots = [];
-                        if (p.slots.length === 0) {
-                            p.slots.push([moveInstance]);
-                        } else {
-                            // 覆蓋第一個 slot
-                            p.slots[0] = [moveInstance];
-                        }
+                        p.slots.push([moveInstance]);
                         // 也加到 moves
                         if (!p.moves) p.moves = [];
                         p.moves.push(moveInstance);
-                        try { if (!p.active) p.active = 0; } catch(e){}
-                        alert('set slot[0] = ' + moveId + '\nslots: ' + p.slots.length + '\nslot[0] move: ' + (p.slots[0] && p.slots[0][0] && p.slots[0][0].id));
+                        // 設 active 為最新的
+                        try { p.active = p.slots.length - 1; } catch(e){}
+                        alert('added: ' + moveId + '\nslots: ' + p.slots.length + '\nmaxMoves: ' + p.maxMoves);
                     } else {
                         alert('instance returned null for: ' + moveId);
                     }

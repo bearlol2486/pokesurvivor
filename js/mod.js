@@ -1,5 +1,8 @@
-// PokéSurvivor Mod Panel v2 — uses actual property names
-// atk → atkMul (multiplier), no def/dmg direct, hp/maxHp/level work
+// PokéSurvivor Mod Panel v3 — uses real property names + enemy nuke
+// Player: hp/maxHp/atkMul/spd/critChance/level/xp
+// Damage: per-move dmg, not on player — can't directly set
+// One-Hit: set all enemies hp to 1 each tick
+// Defense: hook player.hurt to no-op (god mode already does this via hp=maxHp)
 (function(){
     if (window._mp_loaded) return;
     window._mp_loaded = true;
@@ -16,6 +19,56 @@
         return null;
     }
 
+    function getEnemies(GAME) {
+        // Try common enemy containers
+        var out = [];
+        if (!GAME.Enemies && !GAME.EnemyMgr) return out;
+        // Try Enemies as array
+        try {
+            var e = GAME.Enemies;
+            if (Array.isArray(e)) return e;
+            // If it has children
+            if (e.children) for (var c of e.children) out.push(c);
+            // If it's a Map
+            if (e.size) e.forEach(function(v){ out.push(v); });
+        } catch(err) {}
+        try {
+            var em = GAME.EnemyMgr;
+            if (em) {
+                if (em.enemies && Array.isArray(em.enemies)) out = out.concat(em.enemies);
+                if (em.list && Array.isArray(em.list)) out = out.concat(em.list);
+                if (em.active && Array.isArray(em.active)) out = out.concat(em.active);
+            }
+        } catch(err) {}
+        return out;
+    }
+
+    function scanEnemies(GAME) {
+        // Brute force: scan all properties of GAME for arrays of objects with hp
+        var out = [];
+        function tryAdd(arr) {
+            if (!Array.isArray(arr)) return;
+            for (var i = 0; i < arr.length; i++) {
+                var o = arr[i];
+                if (o && typeof o === 'object' && 'hp' in o && 'maxHp' in o && !o.BUILT) {
+                    out.push(o);
+                }
+            }
+        }
+        for (var k in GAME) {
+            try { tryAdd(GAME[k]); } catch(e){}
+            try {
+                var sub = GAME[k];
+                if (sub && typeof sub === 'object') {
+                    for (var k2 in sub) {
+                        try { tryAdd(sub[k2]); } catch(e){}
+                    }
+                }
+            } catch(e){}
+        }
+        return out;
+    }
+
     function makePanel(GAME) {
         if (document.getElementById('_ps_modpanel')) return;
         var sg = document.createElement('div');
@@ -24,7 +77,7 @@
         document.body.appendChild(sg);
 
         var title = document.createElement('div');
-        title.textContent = 'Mod Panel v2';
+        title.textContent = 'Mod Panel v3';
         title.style.cssText = 'color:#00a2ff;font-weight:bold;padding:4px 0 8px;cursor:move;';
         sg.appendChild(title);
 
@@ -56,7 +109,7 @@
             return b;
         }
 
-        function _statRow(label, displayKey, setFn) {
+        function _statRow(label, setFn) {
             var r = _row(label);
             var val = document.createElement('span');
             val.textContent = '?';
@@ -65,10 +118,7 @@
             var b = _btn('MAX', '#b41818', function(){
                 var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
                 if (!p) return;
-                try {
-                    setFn(p);
-                    val.textContent = 'SET';
-                } catch(e) { val.textContent = 'ERR'; }
+                try { setFn(p); val.textContent = 'SET'; } catch(e) { val.textContent = 'ERR'; }
             });
             r.appendChild(b);
             return val;
@@ -84,47 +134,23 @@
             r.appendChild(b);
         }
 
-        // HP: set to maxHp
-        var hpVal = _statRow('HP', 'hp', function(p){
-            p.hp = p.maxHp;
-        });
-        // MaxHp boost: set maxHp to huge
-        var maxHpVal = _statRow('MaxHP', 'maxHp', function(p){
-            p.maxHp = 99999;
-            p.hp = 99999;
-        });
-        // atkMul: attack multiplier
-        var atkVal = _statRow('ATK', 'atkMul', function(p){
-            p.atkMul = 99;
-        });
-        // spd: speed
-        var spdVal = _statRow('SPD', 'spd', function(p){
-            p.spd = 500;
-        });
-        // critChance
-        var critVal = _statRow('CRIT', 'critChance', function(p){
-            p.critChance = 1.0;
-        });
-        // level
-        var lvlVal = _statRow('LEVEL', 'level', function(p){
-            p.level = 99;
-            p.xp = 0;
-        });
-        // xp
-        var xpVal = _statRow('XP', 'xp', function(p){
-            p.xp = 999999;
-        });
+        var hpVal = _statRow('HP', function(p){ p.hp = p.maxHp; });
+        var maxHpVal = _statRow('MaxHP', function(p){ p.maxHp = 99999; p.hp = 99999; });
+        var atkVal = _statRow('ATK Mul', function(p){ p.atkMul = 99; });
+        var spdVal = _statRow('SPD', function(p){ p.spd = 500; });
+        var critVal = _statRow('CRIT', function(p){ p.critChance = 1.0; });
+        var lvlVal = _statRow('LEVEL', function(p){ p.level = 99; p.xp = 0; });
 
         _toggle('God Mode', 'godmode', 'ON', 'OFF', '#00b450', '#3c3c41');
-        _toggle('Max ATK Lock', 'atklock', 'ON', 'OFF', '#b41818', '#3c3c41');
-        _toggle('Speed Hack', 'speedlock', 'ON', 'OFF', '#00a2ff', '#3c3c41');
+        _toggle('Kill Aura', 'killaura', 'ON', 'OFF', '#b41818', '#3c3c41');
+        _toggle('ATK Lock', 'atklock', 'ON', 'OFF', '#b41818', '#3c3c41');
+        _toggle('SPD Lock', 'spdlock', 'ON', 'OFF', '#00a2ff', '#3c3c41');
 
         var status = document.createElement('div');
         status.textContent = 'waiting...';
         status.style.cssText = 'color:#888;padding:4px 0;font-size:10px;';
         body.appendChild(status);
 
-        // Drag
         var drag = false, ds = null, sp = null;
         title.addEventListener('mousedown', function(e) {
             drag = true; ds = {x:e.clientX, y:e.clientY}; sp = {x:parseInt(sg.style.left), y:parseInt(sg.style.top)};
@@ -147,7 +173,6 @@
         document.addEventListener('mouseup', function(){ drag = false; });
         document.addEventListener('touchend', function(){ drag = false; });
 
-        // Auto-refresh loop: update displays + apply locks
         setInterval(function() {
             var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
             if (!p) { status.textContent = 'no player (start a run)'; return; }
@@ -158,12 +183,26 @@
             try { spdVal.textContent = (p.spd || 0).toFixed(1); } catch(e){}
             try { critVal.textContent = ((p.critChance || 0) * 100).toFixed(0) + '%'; } catch(e){}
             try { lvlVal.textContent = p.level; } catch(e){}
-            try { xpVal.textContent = p.xp + '/' + (p.xpNext || '?'); } catch(e){}
             // Apply locks
             if (window._mp_godmode) { try { p.hp = p.maxHp; } catch(e){} }
             if (window._mp_atklock) { try { p.atkMul = 99; } catch(e){} }
-            if (window._mp_speedlock) { try { p.spd = 500; } catch(e){} }
-        }, 500);
+            if (window._mp_spdlock) { try { p.spd = 500; } catch(e){} }
+            // Kill Aura: set all enemies hp to 1
+            if (window._mp_killaura) {
+                try {
+                    var enemies = scanEnemies(window.GAME);
+                    var killed = 0;
+                    for (var i = 0; i < enemies.length; i++) {
+                        var e = enemies[i];
+                        if (e && e.hp !== undefined && e.hp > 0) {
+                            e.hp = 1;
+                            killed++;
+                        }
+                    }
+                    status.textContent = 'killaura: ' + killed + ' enemies tagged';
+                } catch(err) {}
+            }
+        }, 200);
     }
 
     function tryInject() {
@@ -175,11 +214,11 @@
                 window.GAME = g;
                 clearInterval(iv);
                 makePanel(g);
-                console.log('[ModPanel v2] Loaded, GAME exposed');
+                console.log('[ModPanel v3] Loaded');
             }
             if (tries > 60) {
                 clearInterval(iv);
-                console.log('[ModPanel v2] Gave up waiting for game');
+                console.log('[ModPanel v3] Gave up');
             }
         }, 500);
     }

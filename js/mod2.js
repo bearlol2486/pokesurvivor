@@ -191,7 +191,7 @@
         _inputRow('Set HP', 'hp', function(p, v){ p.hp = v; });
         _inputRow('Set MaxHP', 'maxHp', function(p, v){ p.maxHp = v; p.hp = v; });
         _inputRow('Set ATK', 'atkMul', function(p, v){ p.atkMul = v; });
-        _inputRow('Set SPD', 'spd', function(p, v){ p.spd = v; });
+        _inputRow('Set SPD', 'spd', function(p, v){ p.spd = v; p.baseSpd = v; p.spdMul = v / 10; });
         _inputRow('Set CRIT', '0-1', function(p, v){ p.critChance = v; });
         _inputRow('Set LEVEL', 'lvl', function(p, v){ p.level = v; p.xp = 0; });
         _inputRow('Set XP', 'xp', function(p, v){ p.xp = v; });
@@ -207,7 +207,7 @@
         });
         _toggle('SPD Lock', 'spdlock', 'ON', 'OFF', '#00a2ff', '#3c3c41', function(){
             var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
-            if (p) try { p.spd = 1; p.speed = 1; p.baseSpd = 1; } catch(e){}
+            if (p) try { p.spd = 1; p.speed = 1; p.baseSpd = 1; p.spdMul = 1; } catch(e){}
         });
         _toggle('XP Boost', 'xpboost', 'ON', 'OFF', '#00ff88', '#3c3c41');
         _toggle('Magnet Lock', 'magnetlock', 'ON', 'OFF', '#ff9ed8', '#3c3c41', function(){
@@ -321,7 +321,7 @@
             // Apply locks
             if (window._mp_godmode) { try { p.hp = p.maxHp; } catch(e){} }
             if (window._mp_atklock) { try { p.atkMul = 99; } catch(e){} }
-            if (window._mp_spdlock) { try { p.spd = 500; p.speed = 500; p.baseSpd = 500; } catch(e){} }
+            if (window._mp_spdlock) { try { p.spd = 500; p.speed = 500; p.baseSpd = 500; p.spdMul = 10; } catch(e){} }
             if (window._mp_xpboost) { try { p.xp = (p.xpNext || 100) + 100; } catch(e){} }
             if (window._mp_magnetlock) { try { p.magnet = 999; p.magnetMul = 99; } catch(e){} }
             if (window._mp_nocd) { try { p.cdMul = 0.01; } catch(e){} }

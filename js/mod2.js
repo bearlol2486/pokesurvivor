@@ -95,18 +95,17 @@
         minBtn.style.cssText = 'position:absolute;top:8px;right:36px;width:22px;height:22px;background:rgba(139,90,43,0.15);color:#8b5a2b;border:1px solid #8b5a2b;border-radius:50%;cursor:pointer;font-size:11px;font-weight:bold;';
         sg.appendChild(minBtn);
         var minimized = false;
-        var bodyHeight = 'auto';
         minBtn.onclick = function(){
             minimized = !minimized;
             if (minimized) {
                 body.style.display = 'none';
-                sg.style.height = '32px';
-                sg.style.overflow = 'hidden';
+                sg.style.width = 'auto';
+                sg.style.height = 'auto';
+                sg.style.padding = '6px 32px 6px 10px';
                 minBtn.textContent = '+';
             } else {
                 body.style.display = '';
-                sg.style.height = 'auto';
-                sg.style.overflow = '';
+                sg.style.padding = '10px';
                 minBtn.textContent = '—';
             }
         };

@@ -298,11 +298,35 @@
         _speedBtn('加速 2x', 2);
         _speedBtn('加速 4x', 4);
 
-        // === 加技能 ===
+        // === 時間跳躍 ===
         var sep3 = document.createElement('div');
-        sep3.textContent = '✦ Add Move ✦';
+        sep3.textContent = '✦ Time Jump ✦';
         sep3.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
         body.appendChild(sep3);
+
+        function _timeBtn(label, seconds) {
+            var r = _row(label);
+            var b = _btn(seconds + 's', '#e67e22', function(){
+                var G = window.GAME;
+                if (!G || !G.Game || !G.Game.st) { alert('no game state'); return; }
+                try {
+                    G.Game.st.time = seconds;
+                    alert('time set to ' + seconds + 's (' + Math.floor(seconds/60) + ' min)');
+                } catch(e) { alert('err: ' + e.message); }
+            });
+            r.appendChild(b);
+        }
+        _timeBtn('5 分鐘', 300);
+        _timeBtn('10 分鐘', 600);
+        _timeBtn('20 分鐘', 1200);
+        _timeBtn('30 分鐘', 1800);
+        _timeBtn('34 分鐘', 2040);
+
+        // === 加技能 ===
+        var sep3b = document.createElement('div');
+        sep3b.textContent = '✦ Add Move ✦';
+        sep3b.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
+        body.appendChild(sep3b);
 
         var moveList = [
             ['tackle','Placaje','melee'],['scratch','Arañazo','melee'],['ember','Ascuas','projectile'],

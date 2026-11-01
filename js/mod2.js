@@ -275,6 +275,63 @@
         });
         _toggle('Inf Reroll', 'infre', 'ON', 'OFF', '#8e44ad', '#d4a574');
 
+        // === 遊戲控制 ===
+        var sep2 = document.createElement('div');
+        sep2.textContent = '✦ Game Control ✦';
+        sep2.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
+        body.appendChild(sep2);
+
+        // 暫停按鈕
+        var pauseBtn = _btn('暫停遊戲', '#c0392b', function(){
+            try { window.GAME.Game.togglePause(); } catch(e) {}
+        });
+        pauseBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
+        body.appendChild(pauseBtn);
+
+        // 速度控制
+        function _speedBtn(label, speed) {
+            var r = _row(label);
+            var b = _btn('×' + speed, '#2980b9', function(){
+                try {
+                    if (window.GAME.Game.debugSpeed) {
+                        window.GAME.Game.debugSpeed(speed);
+                    }
+                } catch(e) {}
+            });
+            r.appendChild(b);
+        }
+        _speedBtn('慢動作', 0.3);
+        _speedBtn('正常速', 1);
+        _speedBtn('加速 2x', 2);
+        _speedBtn('加速 4x', 4);
+
+        // Hitbox 調整
+        var hbRow = document.createElement('div');
+        hbRow.style.cssText = 'padding:6px 2px;border-bottom:1px solid rgba(212,165,116,0.25);';
+        var hbLabel = document.createElement('div');
+        hbLabel.textContent = 'Hitbox 大小: 1';
+        hbLabel.style.cssText = 'color:#6b4226;font-weight:500;font-size:11px;margin-bottom:4px;';
+        hbRow.appendChild(hbLabel);
+        var hbSlider = document.createElement('input');
+        hbSlider.type = 'range';
+        hbSlider.min = 1;
+        hbSlider.max = 100;
+        hbSlider.value = 1;
+        hbSlider.style.cssText = 'width:100%;accent-color:#d4a574;';
+        hbSlider.oninput = function(){
+            var v = parseInt(hbSlider.value);
+            var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
+            if (p) {
+                try {
+                    if (!window._mp_origR) window._mp_origR = p.r || 12;
+                    p.r = window._mp_origR * v;
+                    hbLabel.textContent = 'Hitbox 大小: ' + v + 'x (' + Math.floor(p.r) + ')';
+                } catch(e) {}
+            }
+        };
+        hbRow.appendChild(hbSlider);
+        body.appendChild(hbRow);
+
         // === Save / Money / Tickets 區塊 ===
         var sep1 = document.createElement('div');
         sep1.textContent = '✦ Save / Money ✦';

@@ -383,8 +383,8 @@
                 }
                 // scale 物件 — 用大 HP 防止立刻死亡
                 var scale = {'hp':10,'spd':1,'dmg':1};
-                // 構造 boss（isBoss=true）
-                var enemy = new G.Enemy(bossDef, p.x + 50, p.y, scale, true);
+                // 構造 boss（isBoss=true）— 召喚在玩家旁邊（小距離，防超出地圖）
+                var enemy = new G.Enemy(bossDef, p.x + 5, p.y + 5, scale, true);
                 if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
                     // 確保 hp/maxHp 設好
                     try {

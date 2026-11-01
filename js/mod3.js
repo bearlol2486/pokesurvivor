@@ -338,72 +338,43 @@
             });
             r.appendChild(b);
         }
+        _timeBtn('3 分鐘 (boss)', 180);
         _timeBtn('5 分鐘', 300);
         _timeBtn('10 分鐘', 600);
         _timeBtn('20 分鐘', 1200);
         _timeBtn('30 分鐘', 1800);
         _timeBtn('34 分鐘', 2040);
 
-        // === 召喚首領 ===
+        // === 召喚首領（用時間跳躍觸發遊戲自然 boss spawn）===
         var sepBoss = document.createElement('div');
         sepBoss.textContent = '✦ Boss ✦';
         sepBoss.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
         body.appendChild(sepBoss);
 
-        // boss 選單
-        var bossRow = document.createElement('div');
-        bossRow.style.cssText = 'padding:6px 2px;';
-        var bossSelect = document.createElement('select');
-        bossSelect.style.cssText = 'width:100%;background:rgba(255,255,255,0.8);color:#5a3e2b;border:1px solid #d4a574;border-radius:6px;padding:4px;font-size:11px;font-family:inherit;';
-        var bossList = [
-            [3, 'Venusaur 妙蛙花'], [6, 'Charizard 噴火龍'], [9, 'Blastoise 水箭龜'],
-            [65, 'Alakazam 胡地'], [68, 'Machamp 怪力'], [76, 'Golem 隆隆岩'],
-            [94, 'Gengar 耿鬼'], [130, 'Gyarados 暴鯉龍'], [131, 'Lapras 拉普拉斯'],
-            [143, 'Snorlax 卡比獸'], [149, 'Dragonite 快龍'], [150, 'Mewtwo 超夢'],
-            [151, 'Mew 夢幻'], [144, 'Articuno 急凍鳥'], [145, 'Zapdos 閃電鳥'], [146, 'Moltres 火焰鳥']
-        ];
-        for (var bi = 0; bi < bossList.length; bi++) {
-            var opt = document.createElement('option');
-            opt.value = bossList[bi][0];
-            opt.textContent = bossList[bi][1];
-            bossSelect.appendChild(opt);
-        }
-        bossRow.appendChild(bossSelect);
-        body.appendChild(bossRow);
-
-        var bossBtn = _btn('召喚首領', '#c0392b', function(){
+        var bossBtn = _btn('召喚首領 (跳到3分鐘)', '#c0392b', function(){
             var G = window.GAME;
-            if (!G || !G.Game || !G.Game.player) { alert('no player'); return; }
-            var p = G.Game.player;
-            // 暫時關掉 Kill Aura 防止殺 boss
-            var wasKillAura = window._mp_killaura;
-            window._mp_killaura = false;
+            if (!G || !G.Game || !G.Game.st) { alert('no game state'); return; }
             try {
-                var dexNum = parseInt(bossSelect.value);
-                var bossDef = {'dex': dexNum, 'hp': 99999};
-                if (G.Sprites && G.Sprites.preload) {
-                    try { G.Sprites.preload([dexNum]); } catch(e){}
-                }
-                var scale = {'hp':100,'spd':1,'dmg':1};
-                // 召喚在玩家正上方一點點
-                var enemy = new G.Enemy(bossDef, p.x, p.y - 2, scale, true);
-                alert('step1: enemy created\nhp:' + enemy.hp + '\nmaxHp:' + enemy.maxHp);
-                if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
+                // 設時間到 180 秒（3 分鐘）觸發遊戲自然 boss spawn
+                Object.defineProperty(G.Game.st, 'time', {
+                    value: 180,
+                    writable: true,
+                    configurable: true,
+                    enumerable: true
+                });
+                setTimeout(function(){
                     try {
-                        enemy.maxHp = 99999;
-                        enemy.hp = 99999;
-                        // hook hurt 方法讓 boss 不扣血
-                        enemy.hurt = function() { return; };
-                        // hook die 方法讓 boss 不死
-                        enemy.die = function() { return; };
+                        var baseTime = 180;
+                        var startTime = Date.now();
+                        Object.defineProperty(G.Game.st, 'time', {
+                            get: function() { return baseTime + (Date.now() - startTime) / 1000; },
+                            configurable: true,
+                            enumerable: true
+                        });
                     } catch(e){}
-                    G.EnemyMgr.add(enemy);
-                    window._mp_bossprotect = enemy;
-                    alert('step2: added + hurt hooked\nhp: ' + enemy.hp + '\nmaxHp: ' + enemy.maxHp);
-                }
+                }, 500);
+                alert('時間跳到 3 分鐘\n遊戲會自然 spawn boss');
             } catch(e) { alert('err: ' + e.message); }
-            // 恢復 Kill Aura 狀態
-            window._mp_killaura = wasKillAura;
         });
         bossBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
         body.appendChild(bossBtn);

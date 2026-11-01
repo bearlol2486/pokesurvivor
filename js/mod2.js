@@ -367,11 +367,13 @@
 
         var clearMovesBtn = _btn('清空所有技能', '#c0392b', function(){
             var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
-            if (!p || !p.moves) return;
+            if (!p) { alert('no player'); return; }
             try {
-                p.moves.length = 0;
-                status.textContent = 'moves cleared';
-            } catch(e) {}
+                if (p.slots) p.slots.length = 0;
+                if (p.moves) p.moves.length = 0;
+                p.active = 0;
+                alert('cleared!\nslots: ' + (p.slots ? p.slots.length : 'none') + '\nmoves: ' + (p.moves ? p.moves.length : 'none'));
+            } catch(e) { alert('err: ' + e.message); }
         });
         clearMovesBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
         body.appendChild(clearMovesBtn);

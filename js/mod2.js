@@ -353,16 +353,17 @@
             if (!G || !G.Game || !G.Game.player) { alert('no player'); return; }
             var p = G.Game.player;
             try {
-                // 用 upcomingDex 拿一個有效敵人定義
-                var dex = G.Enemies.upcomingDex ? G.Enemies.upcomingDex(0, 50) : null;
-                if (!dex) { alert('拿不到 dex'); return; }
-                // 用 Enemies.scale 拿 scale 物件
-                var scale = G.Enemies.scale ? G.Enemies.scale(dex) : {'hp':1,'spd':1,'dmg':1};
-                // 用 Enemy 構造 boss（isBoss=true）
-                var enemy = new G.Enemy(dex, p.x + 50, p.y, scale, true);
+                if (!G.Enemies || !G.Enemies.BOSSES || G.Enemies.BOSSES.length === 0) { alert('no BOSSES'); return; }
+                // 拿第一個 boss 定義
+                var bossDef = G.Enemies.BOSSES[0];
+                if (!bossDef) { alert('bossDef null'); return; }
+                // scale
+                var scale = G.Enemies.scale ? G.Enemies.scale(bossDef) : {'hp':1,'spd':1,'dmg':1};
+                // 用 boss 定義構造（isBoss=true）
+                var enemy = new G.Enemy(bossDef, p.x + 50, p.y, scale, true);
                 if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
                     G.EnemyMgr.add(enemy);
-                    alert('boss 召喚: ' + (dex.name || dex.dex || 'unknown'));
+                    alert('boss 召喚: ' + (bossDef.name || bossDef.dex || JSON.stringify(Object.keys(bossDef)).slice(0,50)));
                 } else {
                     alert('Enemy 建構失敗');
                 }

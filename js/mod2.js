@@ -79,7 +79,7 @@
         window._mp_bgalpha = 0.5;
         function updateBg() {
             var a = window._mp_bgalpha;
-            sg.style.backgroundImage = 'linear-gradient(135deg,rgba(255,248,235,' + a + '),rgba(245,230,210,' + a + ')),url(assets/panel-bg2.jpg)';
+            sg.style.backgroundImage = 'linear-gradient(135deg,rgba(255,248,235,' + a + '),rgba(245,230,210,' + a + ')),url(assets/panel-bg.jpg)';
         }
         sg.style.cssText = 'position:fixed;top:80px;left:10px;z-index:99999;width:260px;background-size:cover;background-position:center;border:2px solid #d4a574;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#5a3e2b;font-size:12px;padding:10px;box-shadow:0 4px 20px rgba(139,90,43,0.3);user-select:none;backdrop-filter:blur(8px);';
         updateBg();

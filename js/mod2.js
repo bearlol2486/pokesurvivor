@@ -353,15 +353,16 @@
             if (!G || !G.Game || !G.Game.player) { alert('no player'); return; }
             var p = G.Game.player;
             try {
-                // 用遊戲的 Enemy 建構子召喚 boss
-                // Enemy(dexId, x, y, scaleObj, isBoss)
-                // dexId 隨機選一個寶可夢
-                var dexIds = [3, 6, 9, 65, 68, 76, 94, 130, 131, 143, 149, 150];
-                var dexId = dexIds[Math.floor(Math.random() * dexIds.length)];
-                var enemy = new G.Enemy(dexId, p.x + 50, p.y, {'hp':1,'spd':1,'dmg':1}, true);
+                // 用 upcomingDex 拿一個有效敵人定義
+                var dex = G.Enemies.upcomingDex ? G.Enemies.upcomingDex(0, 50) : null;
+                if (!dex) { alert('拿不到 dex'); return; }
+                // 用 Enemies.scale 拿 scale 物件
+                var scale = G.Enemies.scale ? G.Enemies.scale(dex) : {'hp':1,'spd':1,'dmg':1};
+                // 用 Enemy 構造 boss（isBoss=true）
+                var enemy = new G.Enemy(dex, p.x + 50, p.y, scale, true);
                 if (enemy && G.EnemyMgr && G.EnemyMgr.add) {
                     G.EnemyMgr.add(enemy);
-                    alert('boss 召喚: dex #' + dexId);
+                    alert('boss 召喚: ' + (dex.name || dex.dex || 'unknown'));
                 } else {
                     alert('Enemy 建構失敗');
                 }

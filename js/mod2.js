@@ -386,18 +386,34 @@
             var G = window.GAME;
             if (!G || !G.Game) { alert('no game'); return; }
             try {
-                // 方法1: 設時間到 2100 秒（觸發 break event）
                 if (G.Game.st) G.Game.st.time = 2100;
-                // 方法2: 直接呼叫 Rift.onEvent
                 if (G.Rift && G.Rift.onEvent) {
                     G.Rift.onEvent(['rift', 'rift', 1]);
                 }
-                // 方法3: 觸發 break 事件（如果有事件系統）
-                try {
-                    var ev = new Event('rift');
-                    window.dispatchEvent(ev);
-                } catch(e){}
-                alert('rift triggered\n時間設為 2100\nRift.onEvent 已呼叫');
+                // 等 1 秒後把玩家傳送到裂縫附近
+                setTimeout(function(){
+                    var p = G.Game.player;
+                    if (!p) return;
+                    var arena = G.Rift && G.Rift.arena;
+                    if (arena && arena.x !== undefined && arena.y !== undefined) {
+                        // 傳送到裂縫旁邊
+                        p.x = arena.x;
+                        p.y = arena.y;
+                        if (p.bodyH) p.bodyH.x = arena.x, p.bodyH.y = arena.y;
+                        alert('傳送到裂縫: ' + arena.x + ',' + arena.y);
+                    } else {
+                        // 找最近敵人傳送（裂縫通常伴隨敵人）
+                        var enemies = G.EnemyMgr && G.EnemyMgr.all ? G.EnemyMgr.all() : [];
+                        if (enemies.length > 0 && p) {
+                            p.x = enemies[0].x;
+                            p.y = enemies[0].y;
+                            alert('傳送到最近敵人');
+                        } else {
+                            alert('裂縫已召喚，但找不到位置傳送');
+                        }
+                    }
+                }, 1000);
+                alert('rift triggered\n1 秒後傳送到裂縫');
             } catch(e) { alert('err: ' + e.message); }
         });
         riftBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#8e44ad;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';

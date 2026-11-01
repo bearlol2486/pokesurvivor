@@ -164,7 +164,9 @@
             var b = document.createElement('button');
             b.textContent = text;
             b.style.cssText = 'background:' + (color || '#d4a574') + ';color:#fff;border:none;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:10px;font-weight:600;transition:transform 0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.1);';
-            b.onclick = fn;
+            // 用多種事件確保 iOS 觸發
+            b.addEventListener('click', fn);
+            b.addEventListener('touchend', function(e){ e.preventDefault(); fn(); });
             b.onmouseenter = function(){ b.style.transform = 'scale(1.05)'; };
             b.onmouseleave = function(){ b.style.transform = 'scale(1)'; };
             return b;

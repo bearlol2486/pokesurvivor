@@ -335,16 +335,22 @@
 
         var addMoveBtn = _btn('加入技能', '#27ae60', function(){
             var p = window.GAME && window.GAME.Game && window.GAME.Game.player;
-            if (!p) return;
+            if (!p) { status.textContent = 'no player'; return; }
             var moveId = moveSelect.value;
             try {
                 var G = window.GAME;
                 if (G.Moves && G.Moves.instance) {
                     var moveInstance = G.Moves.instance(moveId, 1);
-                    if (moveInstance && p.moves) {
+                    if (moveInstance) {
+                        moveInstance.since = G.Game.st ? G.Game.st.time : 0;
+                        if (!p.moves) p.moves = [];
                         p.moves.push(moveInstance);
-                        status.textContent = 'added: ' + moveId;
+                        status.textContent = 'added: ' + moveId + ' (total: ' + p.moves.length + ')';
+                    } else {
+                        status.textContent = 'instance returned null';
                     }
+                } else {
+                    status.textContent = 'Moves.instance not found';
                 }
             } catch(e) { status.textContent = 'err: ' + e.message; }
         });

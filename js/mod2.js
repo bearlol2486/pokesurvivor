@@ -376,6 +376,24 @@
         clearMovesBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
         body.appendChild(clearMovesBtn);
 
+        // === 召喚裂縫 ===
+        var sep4 = document.createElement('div');
+        sep4.textContent = '✦ Rift ✦';
+        sep4.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
+        body.appendChild(sep4);
+
+        var riftBtn = _btn('召喚裂縫', '#8e44ad', function(){
+            var G = window.GAME;
+            if (!G || !G.Game || !G.Game.st) { alert('no game state'); return; }
+            try {
+                // 0x834 = 2100 秒，遊戲時間到 2100 會自動觸發裂縫
+                G.Game.st.time = 2100;
+                alert('time set to 2100\n裂縫應該馬上出現');
+            } catch(e) { alert('err: ' + e.message); }
+        });
+        riftBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#8e44ad;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
+        body.appendChild(riftBtn);
+
         // === Save / Money / Tickets 區塊 ===
         var sep1 = document.createElement('div');
         sep1.textContent = '✦ Save / Money ✦';

@@ -379,6 +379,91 @@
         bossBtn.style.cssText = 'width:100%;margin-top:4px;padding:6px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;';
         body.appendChild(bossBtn);
 
+        // === 好友系統 ===
+        var sepFriends = document.createElement('div');
+        sepFriends.textContent = '✦ Friends ✦';
+        sepFriends.style.cssText = 'color:#8b5a2b;padding:8px 0 3px;font-size:10px;font-weight:600;border-top:1px solid #d4a574;margin-top:8px;text-align:center;letter-spacing:1px;';
+        body.appendChild(sepFriends);
+
+        var myId = localStorage.getItem('_ps_myid');
+        if (!myId) {
+            myId = 'P' + Math.random().toString(36).substr(2, 6).toUpperCase();
+            localStorage.setItem('_ps_myid', myId);
+        }
+        var myIdLabel = document.createElement('div');
+        myIdLabel.textContent = '你的 ID: ' + myId;
+        myIdLabel.style.cssText = 'color:#5a3e2b;font-size:11px;padding:4px 2px;background:rgba(255,255,255,0.5);border-radius:4px;margin:2px 0;text-align:center;font-weight:600;';
+        body.appendChild(myIdLabel);
+
+        var copyIdBtn = _btn('複製我的 ID', '#2980b9', function(){
+            try { navigator.clipboard.writeText(myId); alert('已複製: ' + myId); } catch(e) { alert('手動複製: ' + myId); }
+        });
+        copyIdBtn.style.cssText = 'width:100%;margin-top:2px;padding:4px;background:#2980b9;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:10px;font-weight:600;';
+        body.appendChild(copyIdBtn);
+
+        var friendInput = document.createElement('input');
+        friendInput.type = 'text';
+        friendInput.placeholder = '輸入朋友 ID';
+        friendInput.style.cssText = 'width:100%;background:rgba(255,255,255,0.7);color:#5a3e2b;border:1px solid #d4a574;border-radius:6px;padding:4px 8px;font-size:11px;margin-top:4px;font-family:inherit;box-sizing:border-box;';
+        body.appendChild(friendInput);
+
+        function getGithubToken() {
+            var t = localStorage.getItem('_ps_ght') || window._ps_ght;
+            if (!t) {
+                t = prompt('好友系統需要 GitHub token (會存在本地)\n請輸入你的 token (ghp_開頭):');
+                if (t) { localStorage.setItem('_ps_ght', t); window._ps_ght = t; }
+            }
+            return t;
+        }
+
+        var addFriendBtn = _btn('加好友', '#27ae60', function(){
+            var friendId = friendInput.value.trim().toUpperCase();
+            if (!friendId || friendId === myId) { alert('ID 不對'); return; }
+            var token = getGithubToken();
+            if (!token) { alert('需要 token'); return; }
+            var url = 'https://api.github.com/repos/bearlol2486/pokesurvivor/contents/data/friends.json';
+            fetch(url + '?ref=main').then(r => r.json()).then(data => {
+                var content = JSON.parse(atob(data.content));
+                var sha = data.sha;
+                if (!content.friends) content.friends = {};
+                if (!content.friends[myId]) content.friends[myId] = [];
+                if (content.friends[myId].indexOf(friendId) === -1) content.friends[myId].push(friendId);
+                if (!content.friends[friendId]) content.friends[friendId] = [];
+                if (content.friends[friendId].indexOf(myId) === -1) content.friends[friendId].push(myId);
+                var newContent = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
+                fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: 'add friend ' + friendId, content: newContent, sha: sha, branch: 'main' })
+                }).then(r => r.json()).then(res => {
+                    if (res.commit) { alert('已加好友: ' + friendId); friendInput.value = ''; }
+                    else { alert('失敗: ' + (res.message || 'unknown')); }
+                }).catch(e => alert('err: ' + e.message));
+            }).catch(e => alert('讀取失敗: ' + e.message));
+        });
+        addFriendBtn.style.cssText = 'width:100%;margin-top:4px;padding:4px;background:#27ae60;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:10px;font-weight:600;';
+        body.appendChild(addFriendBtn);
+
+        var friendListLabel = document.createElement('div');
+        friendListLabel.textContent = '好友列表: (點刷新)';
+        friendListLabel.style.cssText = 'color:#6b4226;font-size:10px;padding:4px 2px;background:rgba(255,255,255,0.5);border-radius:4px;margin-top:4px;min-height:20px;white-space:pre-wrap;';
+        body.appendChild(friendListLabel);
+
+        var refreshFriendsBtn = _btn('刷新好友列表', '#8b5a2b', function(){
+            friendListLabel.textContent = '載入中...';
+            var url = 'https://api.github.com/repos/bearlol2486/pokesurvivor/contents/data/friends.json?ref=main&t=' + Date.now();
+            fetch(url).then(r => r.json()).then(data => {
+                try {
+                    var content = JSON.parse(atob(data.content));
+                    var myFriends = (content.friends && content.friends[myId]) || [];
+                    if (myFriends.length === 0) { friendListLabel.textContent = '沒有好友'; }
+                    else { friendListLabel.textContent = '好友 (' + myFriends.length + '):\n' + myFriends.join('\n'); }
+                } catch(e) { friendListLabel.textContent = '解析失敗'; }
+            }).catch(e => { friendListLabel.textContent = '讀取失敗'; });
+        });
+        refreshFriendsBtn.style.cssText = 'width:100%;margin-top:2px;padding:4px;background:#8b5a2b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:10px;font-weight:600;';
+        body.appendChild(refreshFriendsBtn);
+
         // === 加技能 ===
         var sep3b = document.createElement('div');
         sep3b.textContent = '✦ Add Move ✦';

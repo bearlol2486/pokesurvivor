@@ -8,11 +8,16 @@
     window._mp_loaded = true;
 
     function findGameObject() {
+        // Method 1: Check for BUILT property (old pattern)
         for (var k in window) {
             try {
                 var v = window[k];
-                if (v && typeof v === 'object' && v.BUILT === true && v.Game) {
-                    return v;
+                if (v && typeof v === 'object' && !v.nodeName) {
+                    if (v.BUILT === true && v.Game) return v;
+                    // Method 2: Check for Game + Enemies sub-objects (new obfuscation)
+                    if (v.Game && typeof v.Game === 'object' && v.Enemies && typeof v.Enemies === 'object') return v;
+                    // Method 3: Check for Game with player property
+                    if (v.Game && v.Game.player) return v;
                 }
             } catch(e) {}
         }
